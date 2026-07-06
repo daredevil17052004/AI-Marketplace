@@ -1,0 +1,56 @@
+services:
+
+  # Postgres
+  postgres:
+    image: postgres:16-alpine
+    container_name: marketplace_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: marketplace
+      POSTGRES_PASSWORD: ansh
+      POSTGRES_DB: marketplace_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test : ["CMD-SHELL", "pg_isready -U marketplace -d marketplace_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+    # ── Redis: queue, cache, pub/sub, rate-limit counters ───────────
+    # One single Redis instance does FOUR jobs in this project:
+    # 1. BullMQ job queue storage
+    # 2. Pub/sub glue for WebSocket broadcasts across server instances
+    # 3. Sliding-window rate limit counters
+    # 4. General response caching (later)
+
+  redis: 
+    image: redis:7-alpine
+    container_name: marketplace_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test : ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+    # ── Adminer: a tiny web UI to peek inside Postgres ──────────────
+  adminer:
+    image: adminer:latest
+    container_name: marketplace_adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  redis_data:
