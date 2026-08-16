@@ -43,8 +43,8 @@ export const users = pgTable("users",{
 //agents table
 export const agents = pgTable("agents",{
     id : uuid("id").primaryKey().defaultRandom(),
-    email: varchar("email", { length: 255 }).notNull(),
-    decription: text("description").notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
+    description: text("description").notNull(),
     systemPrompt: text("system_prompt").notNull(),
      // jsonb stores the shape of inputs THIS agent expects, e.g.:
     // { "fields": [{ "name": "text", "type": "string", "required": true }] }
