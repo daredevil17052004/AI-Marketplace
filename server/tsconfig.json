@@ -15,7 +15,8 @@
     "types": ["node"],
   },
   "include": ["src/**/*",
-              "drizzle.config.ts"
+              "drizzle.config.ts",
+              "test_e2e.ts"
               ],
   "exclude": ["node_modules", "dist"]
 }
