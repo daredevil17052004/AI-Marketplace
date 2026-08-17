@@ -7,11 +7,12 @@ import { db } from "../db/index.js";
 import { jobs } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { getAgentById } from "../services/agentService.js";
+import { publishJobEvent } from "../lib/pubsub.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 async function processJob(job: Job<AgentJobPayload>) {
-  const { jobId, agentId, inputPayload } = job.data;
+  const { jobId, agentId, userId, inputPayload } = job.data;
   const startTime = Date.now();
 
   try {
@@ -44,6 +45,14 @@ async function processJob(job: Job<AgentJobPayload>) {
         durationMs: Date.now() - startTime,
       })
       .where(eq(jobs.id, jobId));
+
+    // publisher added
+    await publishJobEvent(userId,{
+      jobId,
+      status:"completed",
+      outputResult:{text: output},
+    });
+
   } catch (err) {
     // mark as failed immediately in DB before BullMQ retries
     await db.update(jobs)
@@ -71,7 +80,9 @@ worker.on("completed", (job) => {
 worker.on("failed", async (job, err) => {
   console.error(`Job ${job?.id} failed:`, err.message);
 
-  if (job?.data.jobId) {
+  if (!job) return;
+
+  if (job.data.jobId) {
     await db.update(jobs)
       .set({
         status: "failed",
@@ -80,6 +91,12 @@ worker.on("failed", async (job, err) => {
       })
       .where(eq(jobs.id, job.data.jobId));
   }
+
+  await publishJobEvent(job.data.userId,{
+    jobId:job.data.jobId,
+    status:"failed",
+    errorMessage: err.message,
+  })
 });
 
 console.log("Worker started, waiting for jobs...");
