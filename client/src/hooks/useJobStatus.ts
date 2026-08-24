@@ -7,14 +7,14 @@ export type JobStatus = "pending" | "processing" | "completed" | "failed";
 
 interface JobStatusState {
   status: JobStatus;
-  outputResult: string | null;
+  outputResult: { text: string } | null;
   errorMessage: string | null;
 }
 
 interface JobUpdateMessage {
   jobId: string;
   status: JobStatus;
-  outputResult?: string;
+  outputResult?: { text: string };
   errorMessage?: string;
 }
 
@@ -71,7 +71,11 @@ export function useJobStatus(jobId: string | null): JobStatusState {
 
     // Cleanup: close the socket when the component unmounts or jobId changes
     return () => {
-      ws.close();
+      if (ws.readyState === 1) { // OPEN
+        ws.close();
+      } else if (ws.readyState === 0) { // CONNECTING
+        ws.onopen = () => ws.close();
+      }
     };
   }, [jobId]);
 

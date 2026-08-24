@@ -26,7 +26,7 @@ async function processJob(job: Job<AgentJobPayload>) {
 
     // Step 3: call Gemini
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-2.5-flash",
       systemInstruction: agent.systemPrompt,  // agent's instruction
     });
 

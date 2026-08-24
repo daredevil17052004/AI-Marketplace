@@ -7,7 +7,17 @@ import { verifyAccessToken } from "./tokens.js";
 const userConnections = new Map<string, Set<WebSocket>>();
 
 export function initWebSocketServer(server: Server): void {
-  const wss = new WebSocketServer({ server });
+  const wss = new WebSocketServer({ 
+    server,
+    verifyClient: (info: { origin: string; secure: boolean; req: IncomingMessage }) => {
+      const origin = info.origin;
+      const allowedOrigins = [
+        "http://localhost:3000",
+        "http://localhost:4000",
+      ];
+      return allowedOrigins.includes(origin) || !origin;
+    }
+  });
 
   wss.on("connection", async (ws: WebSocket, req: IncomingMessage) => {
     // Client connects as: ws://localhost:4000?token=xxx

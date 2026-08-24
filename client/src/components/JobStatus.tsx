@@ -63,7 +63,7 @@ export default function JobStatus({ jobId }: JobStatusProps) {
       {/* Output box */}
       <div className="bg-gray-800 border border-gray-700 rounded-2xl p-5">
         <pre className="text-sm text-gray-200 whitespace-pre-wrap break-words leading-relaxed font-mono">
-          {outputResult ?? "(No output returned)"}
+          {outputResult?.text ?? "(No output returned)"}
         </pre>
       </div>
 
