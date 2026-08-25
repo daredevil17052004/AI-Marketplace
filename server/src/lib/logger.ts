@@ -8,7 +8,7 @@ const logger = pino({
         ? {
             target : 'pino-pretty',
             options :{
-                colorise: true,
+                colorize: true,
                 translateTime: 'SYS:standard',
                 ignore: 'pid,hostname',
             }

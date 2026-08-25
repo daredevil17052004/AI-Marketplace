@@ -1,6 +1,5 @@
 import { redisConnection } from './redis.js';
 import logger from './logger.js';
-import { param } from 'drizzle-orm';
 
 interface RateLimitResult {
     allowed: boolean;
@@ -23,7 +22,7 @@ export async function checkRateLimit(
     limit: number = 60,
     windowSeconds: number = 60
 ): Promise<RateLimitResult> {
-    const key = `rate_limit: ${action}:${userId}`;
+    const key = `rate_limit:${action}:${userId}`;
     const now = Date.now();
     const windowStart = now - (windowSeconds * 1000);
 

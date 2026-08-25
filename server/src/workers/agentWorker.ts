@@ -8,12 +8,16 @@ import { jobs } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { getAgentById } from "../services/agentService.js";
 import { publishJobEvent } from "../lib/pubsub.js";
+import logger from "../lib/logger.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 async function processJob(job: Job<AgentJobPayload>) {
   const { jobId, agentId, userId, inputPayload } = job.data;
   const startTime = Date.now();
+  const jobLogger = logger.child({ jobId, agentId, userId });
+
+  jobLogger.info('Starting job execution');
 
   try {
     // Step 1: mark as processing
@@ -53,6 +57,8 @@ async function processJob(job: Job<AgentJobPayload>) {
       outputResult:{text: output},
     });
 
+    jobLogger.info({ durationMs: Date.now() - startTime }, 'Job completed successfully');
+
   } catch (err) {
     // mark as failed immediately in DB before BullMQ retries
     await db.update(jobs)
@@ -63,6 +69,7 @@ async function processJob(job: Job<AgentJobPayload>) {
       })
       .where(eq(jobs.id, jobId));
 
+    jobLogger.error({ err, durationMs: Date.now() - startTime }, 'Job failed during processing');
     throw err; // rethrow so BullMQ knows the job failed and can retry
   }
 }
@@ -74,11 +81,11 @@ const worker = new Worker<AgentJobPayload>(
 );
 
 worker.on("completed", (job) => {
-  console.log(`Job ${job.id} completed`);
+  logger.info({ jobId: job.id }, 'Job completed');
 });
 
 worker.on("failed", async (job, err) => {
-  console.error(`Job ${job?.id} failed:`, err.message);
+  logger.error({ err, jobId: job?.id }, 'Job failed');
 
   if (!job) return;
 
@@ -99,4 +106,4 @@ worker.on("failed", async (job, err) => {
   })
 });
 
-console.log("Worker started, waiting for jobs...");
+logger.info("Worker started, waiting for jobs...");
