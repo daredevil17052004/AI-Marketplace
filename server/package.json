@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "start:worker": "node dist/workers/agentWorker.js",
+    "start": "node dist/src/index.js",
+    "start:worker": "node dist/src/workers/agentWorker.js",
     "dev": "tsx watch src/index.ts",
     "worker": "tsx watch src/workers/agentWorker.ts",
     "build": "tsc",
