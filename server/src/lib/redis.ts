@@ -10,6 +10,8 @@
 
 import {Redis} from "ioredis";
 
+console.log("REDIS_URL:", process.env.REDIS_URL);
+
 export const redisConnection = new Redis(process.env.REDIS_URL!, {
   maxRetriesPerRequest: null,
 });
