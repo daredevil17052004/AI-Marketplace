@@ -1,7 +1,17 @@
-import { Redis } from "ioredis";
+// import { Redis } from "ioredis";
 
-export const redisConnection = new Redis({
-    host: "localhost",
-    port: 6379,
-    maxRetriesPerRequest: null,
-})
+// export const redisConnection = process.env.REDIS_URL
+//   ? new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null })
+//   : new Redis({
+//       host: "localhost",
+//       port: 6379,
+//       maxRetriesPerRequest: null,
+//   });
+
+import {Redis} from "ioredis";
+
+console.log("REDIS_URL:", process.env.REDIS_URL);
+
+export const redisConnection = new Redis(process.env.REDIS_URL!, {
+  maxRetriesPerRequest: null,
+});

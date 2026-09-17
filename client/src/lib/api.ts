@@ -1,164 +1,144 @@
-// src/lib/api.ts
-// Single file that owns every fetch call to the Express backend.
-// Nothing else in the app imports fetch directly.
+import { getAccessToken, getRefreshToken } from "./auth";
 
-import { getAccessToken, getRefreshToken, clearTokens } from "./auth";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
-function authHeaders(): HeadersInit {
-  const token = getAccessToken();
-  return token
-    ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
-    : { "Content-Type": "application/json" };
-}
-
-async function handleResponse<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    let message = `HTTP ${res.status}`;
-    try {
-      const body = await res.json();
-      message = body?.message ?? body?.error ?? message;
-    } catch {
-      // ignore JSON parse failure — keep default message
-    }
-    throw new Error(message);
-  }
-  return res.json() as Promise<T>;
-}
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+const BASE_URL = typeof window === "undefined"
+  ? "http://localhost:4000/api"   // server-side: direct
+  : "/api";    
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Agent {
   id: string;
   name: string;
   description: string;
   creditCost: number;
+  category?: string;
+  tags?: string[];
 }
 
 export interface Job {
   id: string;
   agentId: string;
   status: "pending" | "processing" | "completed" | "failed";
-  inputPayload: unknown;
+  inputPayload?: unknown;
   outputResult?: string;
   errorMessage?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AuthResponse {
   accessToken: string;
   refreshToken: string;
-  user: { id: string; email: string };
+  user?: { id: string; email: string };
 }
 
-// ---------------------------------------------------------------------------
-// Agent endpoints
-// ---------------------------------------------------------------------------
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** GET /api/agents — list all available agents. */
-export async function fetchAgents(): Promise<Agent[]> {
-  const res = await fetch(`${API_BASE}/api/agents`, {
-    headers: authHeaders(),
-    cache: "no-store",
+/**
+ * Build the default headers, including Authorization when a token is present.
+ */
+function buildHeaders(extra: Record<string, string> = {}): HeadersInit {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...extra,
+  };
+  const token = getAccessToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+/**
+ * Thin wrapper around fetch.
+ * Throws a descriptive Error when the response status is not ok.
+ */
+async function request<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const url = `${BASE_URL}${path}`;
+  const res = await fetch(url, {
+    ...options,
+    headers: buildHeaders(options.headers as Record<string, string>),
   });
-  return handleResponse<Agent[]>(res);
+
+  if (!res.ok) {
+    let message = `HTTP ${res.status}: ${res.statusText}`;
+    try {
+      const body = await res.json();
+      if (body?.message) message = body.message;
+      else if (body?.error) message = body.error;
+    } catch {
+      // ignore JSON parse errors — keep the status-based message
+    }
+    throw new Error(message);
+  }
+
+  return res.json() as Promise<T>;
 }
 
-/** GET /api/agents/:id — fetch a single agent by id. */
-export async function fetchAgent(id: string): Promise<Agent> {
-  const res = await fetch(`${API_BASE}/api/agents/${id}`, {
-    headers: authHeaders(),
-    cache: "no-store",
-  });
-  return handleResponse<Agent>(res);
+// ─── Agent endpoints ──────────────────────────────────────────────────────────
+
+/** GET /api/agents — returns the full list of available agents. */
+export function fetchAgents(): Promise<Agent[]> {
+  return request<Agent[]>("/agents");
 }
 
-// ---------------------------------------------------------------------------
-// Job endpoints
-// ---------------------------------------------------------------------------
+/** GET /api/agents/:id — returns a single agent's details. */
+export function fetchAgent(id: string): Promise<Agent> {
+  return request<Agent>(`/agents/${id}`);
+}
 
-/** POST /api/jobs — submit a job and return the created job record. */
-export async function submitJob(
+// ─── Job endpoints ────────────────────────────────────────────────────────────
+
+/** POST /api/jobs — enqueue a new job for the given agent. */
+export function submitJob(
   agentId: string,
   inputPayload: unknown
-): Promise<Job> {
-  const res = await fetch(`${API_BASE}/api/jobs`, {
+): Promise<{ id: string }> {
+  return request<{ id: string }>("/jobs", {
     method: "POST",
-    headers: authHeaders(),
     body: JSON.stringify({ agentId, inputPayload }),
   });
-  return handleResponse<Job>(res);
 }
 
-/** GET /api/jobs/:id — fetch a job by id (REST, not WebSocket). */
-export async function fetchJob(jobId: string): Promise<Job> {
-  const res = await fetch(`${API_BASE}/api/jobs/${jobId}`, {
-    headers: authHeaders(),
-    cache: "no-store",
-  });
-  return handleResponse<Job>(res);
+/** GET /api/jobs/:id — poll the current state of a job. */
+export function fetchJob(jobId: string): Promise<Job> {
+  return request<Job>(`/jobs/${jobId}`);
 }
 
-// ---------------------------------------------------------------------------
-// Auth endpoints
-// ---------------------------------------------------------------------------
+// ─── Auth endpoints ───────────────────────────────────────────────────────────
 
 /** POST /api/auth/login — exchange credentials for tokens. */
-export async function login(
-  email: string,
-  password: string
-): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE}/api/auth/login`, {
+export function login(email: string, password: string): Promise<AuthResponse> {
+  return request<AuthResponse>("/auth/login", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  return handleResponse<AuthResponse>(res);
 }
 
-/** POST /api/auth/register — create account and return tokens. */
-export async function register(
+/** POST /api/auth/register — create a new account and receive tokens. */
+export function register(
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  const res = await fetch(`${API_BASE}/api/auth/register`, {
+  return request<AuthResponse>("/auth/register", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
-  return handleResponse<AuthResponse>(res);
 }
 
 /** POST /api/auth/logout — invalidate the session on the server. */
-export async function logout(): Promise<void> {
-  const refreshToken = getRefreshToken();
-  try {
-    const res = await fetch(`${API_BASE}/api/auth/logout`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify({ refreshToken }),
-    });
-    await handleResponse<void>(res);
-  } finally {
-    clearTokens();
-  }
+export function logout(): Promise<void> {
+  return request<void>("/auth/logout", { method: "POST" });
 }
 
-/** POST /api/auth/refresh — exchange refresh token for a new access token. */
-export async function refreshToken(): Promise<AuthResponse> {
-  const storedRefreshToken = getRefreshToken();
-  const res = await fetch(`${API_BASE}/api/auth/refresh`, {
+/** POST /api/auth/refresh — exchange a refresh token for a new access token. */
+export function refreshToken(): Promise<AuthResponse> {
+  // The refresh token is sent in the body because the access token may be expired.
+  const token = getRefreshToken();
+  return request<AuthResponse>("/auth/refresh", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refreshToken: storedRefreshToken }),
+    body: JSON.stringify({ refreshToken: token }),
   });
-  return handleResponse<AuthResponse>(res);
 }

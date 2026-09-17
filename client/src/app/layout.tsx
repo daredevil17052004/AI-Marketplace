@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "Run AI agents instantly. Pay per use.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"

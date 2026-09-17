@@ -5,6 +5,7 @@ import { jobs, creditsLedger, agents } from "../db/schema.js";
 import { enqueueAgentJob } from "../lib/queue.js";
 import { InsufficientCreditsError, NotFoundError } from "../lib/errors.js";
 import { getAgentById } from "./agentService.js";
+import logger from "../lib/logger.js";
 
 export async function createJob(userId: string, agentId: string, inputPayload: Record<string, unknown>) {
 
@@ -21,6 +22,7 @@ export async function createJob(userId: string, agentId: string, inputPayload: R
   const balance = balanceResult[0]?.balance ?? 0;
 
   if (balance < agent.creditCost) {
+    logger.warn({ userId, agentId, requiredCredits: agent.creditCost, currentCredits: balance }, 'Job creation blocked: Insufficient credits');
     throw new InsufficientCreditsError();
   }
 
@@ -53,6 +55,8 @@ export async function createJob(userId: string, agentId: string, inputPayload: R
     userId,
     inputPayload,
   });
+
+  logger.info({ jobId: newJob.id, userId, agentId }, 'Job created and added to queue');
 
   return newJob;
 }

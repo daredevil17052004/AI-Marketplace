@@ -10,7 +10,7 @@ export async function listAgents(search?: string){
     if (search) {
         filters.push(
             or(
-                ilike(agents.decription, `%${search}%`),
+                ilike(agents.description, `%${search}%`),
                 ilike(agents.systemPrompt, `%${search}%`)
             )
         );
