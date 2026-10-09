@@ -3,11 +3,14 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { login } from "@/lib/api";
-import { saveTokens } from "@/lib/auth";
+import { useAuth } from "@/contexts/AuthContext";
+import BackgroundBeams from "@/components/BackgroundBeams";
+import CardSpotlight from "@/components/CardSpotlight";
+import { Sparkles, Loader2, AlertCircle, ArrowRight, ShieldCheck } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -19,107 +22,139 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { accessToken, refreshToken } = await login(email, password);
-      saveTokens(accessToken, refreshToken);
-      router.push("/marketplace");
+      await login(email, password);
+      router.push("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed.");
+      setError(err instanceof Error ? err.message : "Invalid credentials.");
     } finally {
       setLoading(false);
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      {/* Ambient glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-violet-600/10 blur-3xl" />
-      </div>
+  function handleDemoLogin(role: "user" | "admin") {
+    if (role === "admin") {
+      setEmail("admin@aimarketplace.com");
+      setPassword("AdminPass123!");
+    } else {
+      setEmail("user@aimarketplace.com");
+      setPassword("UserPass123!");
+    }
+  }
 
-      <div className="relative w-full max-w-md">
-        {/* Logo / brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-violet-600 mb-4 shadow-lg shadow-violet-600/30">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+  return (
+    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
+      <BackgroundBeams />
+
+      <div className="relative z-10 w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8 space-y-2">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 shadow-lg shadow-violet-600/30 mb-2">
+            <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Welcome back</h1>
-          <p className="text-gray-400 mt-1 text-sm">Sign in to your AI Marketplace account</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Welcome Back
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-400">
+            Sign in to access your agents, active jobs, and credit balance
+          </p>
         </div>
 
         {/* Card */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+        <CardSpotlight className="p-8 shadow-2xl border-white/10">
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-            {/* Error banner */}
             {error && (
-              <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-red-400 text-sm">{error}</p>
+              <div className="flex items-center gap-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 text-xs text-rose-300">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
-            {/* Email */}
             <div>
-              <label htmlFor="login-email" className="block text-sm font-medium text-gray-300 mb-1.5">
-                Email address
+              <label htmlFor="login-email" className="block text-xs font-semibold text-gray-300 mb-1.5">
+                Email Address
               </label>
               <input
                 id="login-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="name@company.com"
                 required
                 autoComplete="email"
-                className="w-full bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
+                className="w-full bg-gray-950/70 border border-white/10 text-white placeholder-gray-500 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
               />
             </div>
 
-            {/* Password */}
             <div>
-              <label htmlFor="login-password" className="block text-sm font-medium text-gray-300 mb-1.5">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="login-password" className="block text-xs font-semibold text-gray-300">
+                  Password
+                </label>
+                <span className="text-[11px] text-gray-500 hover:text-violet-400 cursor-pointer">
+                  Forgot password?
+                </span>
+              </div>
               <input
                 id="login-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="••••••••••••"
                 required
                 autoComplete="current-password"
-                className="w-full bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
+                className="w-full bg-gray-950/70 border border-white/10 text-white placeholder-gray-500 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
               />
             </div>
 
-            {/* Submit */}
             <button
               id="login-submit"
               type="submit"
               disabled={loading}
-              className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl px-4 py-3 text-sm transition-all duration-200 shadow-lg shadow-violet-600/20 hover:shadow-violet-600/30 mt-2"
+              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-60 text-white font-semibold rounded-xl px-4 py-3 text-sm transition-all duration-200 shadow-lg shadow-violet-600/25 hover:shadow-violet-600/40 flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  Signing in…
-                </span>
-              ) : "Sign in"}
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  <span>Authenticating…</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
-          </form>
-        </div>
 
-        {/* Footer link */}
-        <p className="text-center text-sm text-gray-500 mt-6">
+            {/* Quick Demo Credentials */}
+            <div className="pt-4 border-t border-white/5 space-y-2">
+              <span className="text-[11px] text-gray-500 uppercase tracking-wider block text-center">
+                Quick Demo Fill
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleDemoLogin("user")}
+                  className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 text-xs font-medium transition-colors cursor-pointer border border-white/5"
+                >
+                  Fill Regular User
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDemoLogin("admin")}
+                  className="px-3 py-1.5 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 text-xs font-medium transition-colors cursor-pointer border border-violet-500/20 flex items-center justify-center gap-1"
+                >
+                  <ShieldCheck className="w-3 h-3" />
+                  Fill Admin
+                </button>
+              </div>
+            </div>
+          </form>
+        </CardSpotlight>
+
+        <p className="text-center text-xs text-gray-500 mt-6">
           Don&apos;t have an account?{" "}
           <Link href="/register" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
-            Create one
+            Create account (50 free credits)
           </Link>
         </p>
       </div>

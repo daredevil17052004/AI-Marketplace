@@ -3,11 +3,14 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { register } from "@/lib/api";
-import { saveTokens } from "@/lib/auth";
+import { useAuth } from "@/contexts/AuthContext";
+import BackgroundBeams from "@/components/BackgroundBeams";
+import CardSpotlight from "@/components/CardSpotlight";
+import { Sparkles, Loader2, AlertCircle, ArrowRight, Zap } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { register } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -18,6 +21,11 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
 
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
+      return;
+    }
+
     if (password !== confirm) {
       setError("Passwords do not match.");
       return;
@@ -25,9 +33,8 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const { accessToken, refreshToken } = await register(email, password);
-      saveTokens(accessToken, refreshToken);
-      router.push("/marketplace");
+      await register(email, password);
+      router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed.");
     } finally {
@@ -36,110 +43,104 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      {/* Ambient glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-violet-600/10 blur-3xl" />
-      </div>
+    <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-12">
+      <BackgroundBeams />
 
-      <div className="relative w-full max-w-md">
-        {/* Logo / brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-violet-600 mb-4 shadow-lg shadow-violet-600/30">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+      <div className="relative z-10 w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8 space-y-2">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 shadow-lg shadow-violet-600/30 mb-2">
+            <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Create an account</h1>
-          <p className="text-gray-400 mt-1 text-sm">Start running AI agents in minutes</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            Create an Account
+          </h1>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20">
+            <Zap className="w-3.5 h-3.5 fill-violet-300 text-violet-300" />
+            <span>Includes 50 complimentary credits</span>
+          </div>
         </div>
 
         {/* Card */}
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
-          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-            {/* Error banner */}
+        <CardSpotlight className="p-8 shadow-2xl border-white/10">
+          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
             {error && (
-              <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                <svg className="w-4 h-4 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-red-400 text-sm">{error}</p>
+              <div className="flex items-center gap-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3 text-xs text-rose-300">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
-            {/* Email */}
             <div>
-              <label htmlFor="register-email" className="block text-sm font-medium text-gray-300 mb-1.5">
-                Email address
+              <label htmlFor="register-email" className="block text-xs font-semibold text-gray-300 mb-1.5">
+                Email Address
               </label>
               <input
                 id="register-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="you@domain.com"
                 required
                 autoComplete="email"
-                className="w-full bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
+                className="w-full bg-gray-950/70 border border-white/10 text-white placeholder-gray-500 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
               />
             </div>
 
-            {/* Password */}
             <div>
-              <label htmlFor="register-password" className="block text-sm font-medium text-gray-300 mb-1.5">
-                Password
+              <label htmlFor="register-password" className="block text-xs font-semibold text-gray-300 mb-1.5">
+                Password (min 8 chars)
               </label>
               <input
                 id="register-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="••••••••••••"
                 required
                 autoComplete="new-password"
-                className="w-full bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
+                className="w-full bg-gray-950/70 border border-white/10 text-white placeholder-gray-500 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
               />
             </div>
 
-            {/* Confirm Password */}
             <div>
-              <label htmlFor="register-confirm" className="block text-sm font-medium text-gray-300 mb-1.5">
-                Confirm password
+              <label htmlFor="register-confirm" className="block text-xs font-semibold text-gray-300 mb-1.5">
+                Confirm Password
               </label>
               <input
                 id="register-confirm"
                 type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                placeholder="••••••••"
+                placeholder="••••••••••••"
                 required
                 autoComplete="new-password"
-                className="w-full bg-gray-800 border border-gray-700 text-white placeholder-gray-500 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
+                className="w-full bg-gray-950/70 border border-white/10 text-white placeholder-gray-500 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
               />
             </div>
 
-            {/* Submit */}
             <button
               id="register-submit"
               type="submit"
               disabled={loading}
-              className="w-full bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl px-4 py-3 text-sm transition-all duration-200 shadow-lg shadow-violet-600/20 hover:shadow-violet-600/30 mt-2"
+              className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-60 text-white font-semibold rounded-xl px-4 py-3 text-sm transition-all duration-200 shadow-lg shadow-violet-600/25 hover:shadow-violet-600/40 flex items-center justify-center gap-2 cursor-pointer mt-4"
             >
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  Creating account…
-                </span>
-              ) : "Create account"}
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-white" />
+                  <span>Creating Account…</span>
+                </>
+              ) : (
+                <>
+                  <span>Create Account</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
-        </div>
+        </CardSpotlight>
 
-        {/* Footer link */}
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-xs text-gray-500 mt-6">
           Already have an account?{" "}
           <Link href="/login" className="text-violet-400 hover:text-violet-300 font-medium transition-colors">
             Sign in

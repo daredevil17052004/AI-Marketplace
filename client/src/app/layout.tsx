@@ -1,32 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
-  title: "AI Agent Marketplace",
-  description: "Run AI agents instantly. Pay per use.",
+  title: "AI Marketplace — Autonomous AI Agent Platform",
+  description: "Browse, run, and orchestrate specialized AI agents with pay-per-run credits.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
+    <html lang="en" className={`${inter.variable} h-full antialiased dark`}>
+      <body className="min-h-full flex flex-col bg-gray-950 text-gray-100 font-sans selection:bg-violet-500/30 selection:text-violet-200">
         <Providers>
-          {children}
+          <Navbar />
+          <div className="flex-1 flex flex-col">{children}</div>
+          <Footer />
         </Providers>
       </body>
     </html>
