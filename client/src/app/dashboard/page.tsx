@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   Zap,
   Bot,
@@ -12,12 +13,14 @@ import {
   CheckCircle,
   PlusCircle,
   Sparkles,
+  Activity,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import CardSpotlight from "@/components/CardSpotlight";
 import NumberTicker from "@/components/NumberTicker";
 import StatusBadge from "@/components/StatusBadge";
 import BackgroundBeams from "@/components/BackgroundBeams";
+import CardSpotlight from "@/components/CardSpotlight";
+import { HoverBorderGradient } from "@/components/ui";
 import { fetchJobs, Job, fetchCreditLedger, CreditLedgerItem } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 
@@ -53,19 +56,24 @@ export default function DashboardPage() {
     .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+    <div className="relative min-h-[calc(100vh-4.5rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-10 bg-[#FFFDF9]">
       <BackgroundBeams />
 
       {/* Header */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.08]">
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EAE3D9]">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-widest text-violet-400">
-            Account Dashboard
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">
-            Welcome, {user?.email?.split("@")[0] || "Agent Operator"}
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-400">
+          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-[#FFF2EB] text-[#D43F00] border border-[#FFD6C2]">
+            <span className="text-[#FF4F00] font-black">_</span>
+            <span>Workspace Operations</span>
+          </div>
+          <motion.h1
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="font-heading text-2xl sm:text-3xl font-extrabold text-[#201515] tracking-tight mt-2"
+          >
+            Welcome, {user?.email?.split("@")[0] || "Operator"}
+          </motion.h1>
+          <p className="text-sm text-[#5C524C]">
             Monitor real-time credits, autonomous jobs, and orchestrator metrics.
           </p>
         </div>
@@ -73,219 +81,179 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/agents"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 shadow-md shadow-violet-600/25 transition-all"
+            className="btn-zap-primary text-xs py-2.5 px-5 font-bold"
           >
             <Bot className="w-4 h-4" />
             <span>Launch Agent</span>
           </Link>
           <Link
             href="/credits"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-violet-300 bg-violet-950/40 hover:bg-violet-900/50 border border-violet-500/30 transition-all"
+            className="btn-zap-secondary text-xs py-2.5 px-4 font-bold"
           >
-            <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <Zap className="w-3.5 h-3.5 text-[#FF4F00] fill-[#FF4F00]" />
             <span>Top Up</span>
           </Link>
         </div>
       </div>
 
-      {/* Grid: 3 Metric Cards */}
+      {/* Grid: 3 Metric Cards with CardSpotlight & Motion */}
       <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Card 1: Balance Hero */}
-        <CardSpotlight className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Available Credits
-            </span>
-            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
+        <motion.div
+          whileHover={{ y: -4 }}
+          transition={{ duration: 0.2 }}
+        >
+          <CardSpotlight className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold text-[#887E78] uppercase tracking-wider">
+                Available Credits
+              </span>
+              <div className="p-2 rounded-xl bg-[#FFF2EB] border border-[#FFD6C2]">
+                <Zap className="w-4 h-4 text-[#FF4F00] fill-[#FF4F00]" />
+              </div>
             </div>
-          </div>
-          <div className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-            <NumberTicker value={balance} />
-          </div>
-          <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-white/5">
-            <span>Pay-per-job runtime balance</span>
-            <Link href="/credits" className="text-violet-400 hover:text-violet-300 font-medium">
-              Manage &rarr;
-            </Link>
-          </div>
-        </CardSpotlight>
+            <div className="font-heading text-3xl sm:text-4xl font-extrabold text-[#201515] mb-2">
+              <NumberTicker value={balance} />
+            </div>
+            <div className="flex items-center justify-between text-xs text-[#5C524C] pt-3 border-t border-[#F2ECE2]">
+              <span>Pay-per-job runtime balance</span>
+              <Link href="/credits" className="text-[#FF4F00] hover:underline font-bold flex items-center gap-1">
+                Manage &rarr;
+              </Link>
+            </div>
+          </CardSpotlight>
+        </motion.div>
 
         {/* Card 2: Total Jobs & Success Rate */}
-        <CardSpotlight className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Jobs Processed
-            </span>
-            <div className="p-2 rounded-xl bg-violet-500/10 border border-violet-500/20">
-              <Layers className="w-4 h-4 text-violet-400" />
+        <motion.div
+          whileHover={{ y: -4 }}
+          transition={{ duration: 0.2 }}
+        >
+          <CardSpotlight className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold text-[#887E78] uppercase tracking-wider">
+                Jobs Processed
+              </span>
+              <div className="p-2 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE]">
+                <Layers className="w-4 h-4 text-[#2563EB]" />
+              </div>
             </div>
-          </div>
-          <div className="flex items-baseline gap-3 mb-2">
-            <div className="text-3xl sm:text-4xl font-extrabold text-white">
-              <NumberTicker value={totalJobs} />
+            <div className="flex items-baseline gap-3 mb-2">
+              <div className="font-heading text-3xl sm:text-4xl font-extrabold text-[#201515]">
+                <NumberTicker value={totalJobs} />
+              </div>
+              <span className="text-xs text-[#059669] font-bold flex items-center gap-1">
+                <CheckCircle className="w-3.5 h-3.5" />
+                {successRate}% Success
+              </span>
             </div>
-            <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-              <CheckCircle className="w-3.5 h-3.5" />
-              {successRate}% Success
-            </span>
-          </div>
-          {/* Progress bar */}
-          <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mt-3">
-            <div
-              className="bg-gradient-to-r from-violet-500 to-emerald-400 h-full rounded-full transition-all duration-1000"
-              style={{ width: `${successRate}%` }}
-            />
-          </div>
-        </CardSpotlight>
+            {/* Progress bar */}
+            <div className="w-full bg-[#FAF5EE] h-2 rounded-full overflow-hidden mt-3 border border-[#EAE3D9]">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${successRate}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="bg-[#059669] h-full rounded-full"
+              />
+            </div>
+          </CardSpotlight>
+        </motion.div>
 
         {/* Card 3: Total Credits Spent */}
-        <CardSpotlight className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Total Credits Spent
-            </span>
-            <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20">
-              <TrendingUp className="w-4 h-4 text-cyan-400" />
+        <motion.div
+          whileHover={{ y: -4 }}
+          transition={{ duration: 0.2 }}
+        >
+          <CardSpotlight className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-bold text-[#887E78] uppercase tracking-wider">
+                Lifetime Consumption
+              </span>
+              <div className="p-2 rounded-xl bg-[#FAF5EE] border border-[#EAE3D9]">
+                <TrendingUp className="w-4 h-4 text-[#5C524C]" />
+              </div>
             </div>
-          </div>
-          <div className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-            <NumberTicker value={totalSpent} suffix=" credits" />
-          </div>
-          <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-white/5">
-            <span>Append-only ledger history</span>
-            <Link href="/credits" className="text-violet-400 hover:text-violet-300 font-medium">
-              View Ledger &rarr;
-            </Link>
-          </div>
-        </CardSpotlight>
+            <div className="font-heading text-3xl sm:text-4xl font-extrabold text-[#201515] mb-2">
+              <NumberTicker value={totalSpent} />
+              <span className="text-xs font-semibold text-[#887E78] ml-2">credits</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-[#5C524C] pt-3 border-t border-[#F2ECE2]">
+              <span>Metered across all agent jobs</span>
+              <Link href="/jobs" className="text-[#FF4F00] hover:underline font-bold flex items-center gap-1">
+                View History &rarr;
+              </Link>
+            </div>
+          </CardSpotlight>
+        </motion.div>
       </div>
 
-      {/* Quick Navigation Cards */}
-      <div className="relative z-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Link
-          href="/agents"
-          className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.08] hover:border-violet-500/30 hover:bg-white/[0.04] transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-violet-600/10 text-violet-400 group-hover:scale-110 transition-transform">
-              <Bot className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-white">Browse Agent Catalog</p>
-              <p className="text-[11px] text-gray-400">Discover and trigger specialized bots</p>
-            </div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
-        </Link>
-
-        <Link
-          href="/jobs"
-          className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.08] hover:border-violet-500/30 hover:bg-white/[0.04] transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-sky-600/10 text-sky-400 group-hover:scale-110 transition-transform">
-              <Layers className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-white">Inspect Recent Jobs</p>
-              <p className="text-[11px] text-gray-400">Review real-time execution outputs</p>
-            </div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-sky-400 group-hover:translate-x-1 transition-all" />
-        </Link>
-
-        <Link
-          href="/credits"
-          className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.08] hover:border-violet-500/30 hover:bg-white/[0.04] transition-all flex items-center justify-between group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-600/10 text-amber-400 group-hover:scale-110 transition-transform">
-              <PlusCircle className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold text-white">Purchase Credits</p>
-              <p className="text-[11px] text-gray-400">Flexible pay-as-you-go tiers</p>
-            </div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-all" />
-        </Link>
-      </div>
-
-      {/* Recent Jobs Table */}
+      {/* Recent Activity Table with motion items */}
       <div className="relative z-10 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-white tracking-tight">Recent Jobs</h3>
-            <p className="text-xs text-gray-400">The last execution runs across all your agents</p>
+            <h2 className="font-heading text-xl font-bold text-[#201515] flex items-center gap-2">
+              <Activity className="w-5 h-5 text-[#FF4F00]" />
+              Recent Job Executions
+            </h2>
+            <p className="text-xs text-[#5C524C]">Live jobs submitted from your account</p>
           </div>
           <Link
             href="/jobs"
-            className="text-xs font-medium text-violet-400 hover:text-violet-300 flex items-center gap-1"
+            className="text-xs font-bold text-[#FF4F00] hover:underline inline-flex items-center gap-1"
           >
-            <span>View All ({jobs.length})</span>
+            <span>All Runs</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        <CardSpotlight className="p-0 overflow-hidden">
+        <div className="bg-white border border-[#EAE3D9] rounded-3xl overflow-hidden shadow-xs">
           {loading ? (
-            <div className="p-8 text-center text-xs text-gray-400">Loading jobs…</div>
+            <div className="p-8 text-center text-sm text-[#887E78]">Loading activity…</div>
           ) : jobs.length === 0 ? (
             <div className="p-12 text-center space-y-3">
-              <Sparkles className="w-8 h-8 text-gray-600 mx-auto" />
-              <p className="text-sm text-gray-300 font-medium">No jobs executed yet</p>
-              <p className="text-xs text-gray-500">Pick an agent from the marketplace to run your first task.</p>
-              <Link
-                href="/agents"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 mt-2"
-              >
+              <Bot className="w-8 h-8 text-[#887E78] mx-auto" />
+              <p className="text-sm font-bold text-[#201515]">No agent runs yet</p>
+              <p className="text-xs text-[#5C524C]">Run an agent from the catalog to see real-time output.</p>
+              <Link href="/agents" className="btn-zap-primary text-xs py-2 px-4 inline-flex mt-2">
                 Launch First Agent
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-white/5 bg-white/[0.02] text-gray-400">
-                    <th className="px-6 py-3 font-semibold">Job ID</th>
-                    <th className="px-6 py-3 font-semibold">Agent</th>
-                    <th className="px-6 py-3 font-semibold">Status</th>
-                    <th className="px-6 py-3 font-semibold">Started</th>
-                    <th className="px-6 py-3 font-semibold text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-gray-300">
-                  {jobs.slice(0, 5).map((job) => (
-                    <tr key={job.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 font-mono text-gray-400">
-                        {job.id}
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-white">
-                        {job.agentName || job.agentId}
-                      </td>
-                      <td className="px-6 py-4">
-                        <StatusBadge status={job.status} />
-                      </td>
-                      <td className="px-6 py-4 text-gray-400">
-                        {formatDate(job.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Link
-                          href={`/jobs/${job.id}`}
-                          className="inline-flex items-center gap-1 text-xs font-medium text-violet-400 hover:text-white px-2.5 py-1 rounded-md bg-white/5 hover:bg-violet-600 transition-all"
-                        >
-                          <span>Inspect</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="divide-y divide-[#EAE3D9]">
+              {jobs.slice(0, 5).map((j, idx) => (
+                <motion.div
+                  key={j.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <Link
+                    href={`/jobs/${j.id}`}
+                    className="flex items-center justify-between p-4 sm:p-5 hover:bg-[#FAF5EE] transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-[#FFF2EB] border border-[#FFD6C2] flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Bot className="w-4 h-4 text-[#FF4F00]" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-xs text-[#201515] group-hover:text-[#FF4F00] transition-colors">
+                          {j.agentName || "Agent Run"}
+                        </p>
+                        <p className="text-[11px] text-[#887E78] font-mono">
+                          #{j.id.slice(0, 8)} • {formatDate(j.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <StatusBadge status={j.status} />
+                      <ArrowRight className="w-4 h-4 text-[#887E78] group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
             </div>
           )}
-        </CardSpotlight>
+        </div>
       </div>
     </div>
   );

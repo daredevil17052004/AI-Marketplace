@@ -15,31 +15,31 @@ export default function StatusBadge({ status, className, showIcon = true }: Stat
   const configs: Record<string, { label: string; bg: string; text: string; dot: string; border: string }> = {
     pending: {
       label: "Pending",
-      bg: "bg-amber-500/10",
-      text: "text-amber-400",
-      dot: "bg-amber-400 animate-pulse",
-      border: "border-amber-500/20",
+      bg: "bg-[#FFF8E6]",
+      text: "text-[#B45309]",
+      dot: "bg-[#D97706] animate-pulse",
+      border: "border-[#FDE68A]",
     },
     processing: {
       label: "Processing",
-      bg: "bg-sky-500/10",
-      text: "text-sky-400",
-      dot: "bg-sky-400 animate-ping",
-      border: "border-sky-500/20",
+      bg: "bg-[#EFF6FF]",
+      text: "text-[#1D4ED8]",
+      dot: "bg-[#2563EB] animate-ping",
+      border: "border-[#BFDBFE]",
     },
     completed: {
       label: "Completed",
-      bg: "bg-emerald-500/10",
-      text: "text-emerald-400",
-      dot: "bg-emerald-400",
-      border: "border-emerald-500/20",
+      bg: "bg-[#ECFDF5]",
+      text: "text-[#047857]",
+      dot: "bg-[#059669]",
+      border: "border-[#A7F3D0]",
     },
     failed: {
       label: "Failed",
-      bg: "bg-rose-500/10",
-      text: "text-rose-400",
-      dot: "bg-rose-400",
-      border: "border-rose-500/20",
+      bg: "bg-[#FFF1F2]",
+      text: "text-[#BE123C]",
+      dot: "bg-[#E11D48]",
+      border: "border-[#FECDD3]",
     },
   };
 
@@ -48,7 +48,7 @@ export default function StatusBadge({ status, className, showIcon = true }: Stat
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium border backdrop-blur-sm transition-all",
+        "inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border transition-all shadow-xs",
         current.bg,
         current.text,
         current.border,

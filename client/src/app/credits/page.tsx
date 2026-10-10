@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   Zap,
   CheckCircle2,
@@ -13,9 +14,9 @@ import {
   ShieldCheck,
   Loader2,
 } from "lucide-react";
-import CardSpotlight from "@/components/CardSpotlight";
 import NumberTicker from "@/components/NumberTicker";
 import BackgroundBeams from "@/components/BackgroundBeams";
+import { BackgroundGradient, HoverBorderGradient } from "@/components/ui";
 import { useAuth } from "@/contexts/AuthContext";
 import { fetchCreditLedger, topUpCredits, CreditLedgerItem } from "@/lib/api";
 import { formatDate, cn } from "@/lib/utils";
@@ -68,7 +69,7 @@ export default function CreditsPage() {
       price: "$15",
       popular: true,
       title: "Builder Pro",
-      description: "Optimal for production pipelines & high frequency tasks.",
+      description: "Optimal for production workflows & high frequency tasks.",
       perCredit: "$0.075 / credit",
     },
     {
@@ -82,237 +83,223 @@ export default function CreditsPage() {
   ];
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-10">
+    <div className="relative min-h-[calc(100vh-4.5rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-10 bg-[#FFFDF9]">
       <BackgroundBeams />
 
       {/* Header */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.08]">
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EAE3D9]">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-widest text-violet-400">
-            Billing & Token Ledger
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">
+          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-[#FFF2EB] text-[#D43F00] border border-[#FFD6C2]">
+            <span className="text-[#FF4F00] font-black">_</span>
+            <span>Billing & Token Ledger</span>
+          </div>
+          <motion.h1
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="font-heading text-2xl sm:text-3xl font-extrabold text-[#201515] tracking-tight mt-2"
+          >
             Credits & Usage
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-400">
+          </motion.h1>
+          <p className="text-sm text-[#5C524C]">
             Every agent run deducts credits dynamically according to schema complexity.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
-          <ShieldCheck className="w-4 h-4" />
+        <div className="flex items-center gap-2 text-xs font-bold text-[#047857] bg-[#ECFDF5] border border-[#A7F3D0] px-3.5 py-1.5 rounded-full self-start sm:self-auto">
+          <ShieldCheck className="w-4 h-4 text-[#059669]" />
           <span>Append-Only Ledger Guarantee</span>
         </div>
       </div>
 
       {/* Balance Hero Card */}
       <div className="relative z-10">
-        <CardSpotlight className="p-8 sm:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 border-violet-500/20 bg-gradient-to-br from-violet-950/30 to-gray-900/60">
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="bg-white border border-[#EAE3D9] rounded-3xl p-8 sm:p-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 shadow-sm transition-all"
+        >
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
-              <Zap className="w-4 h-4 fill-amber-400" />
-              <span>Current Available Balance</span>
+            <div className="flex items-center gap-1.5 text-[#D43F00] text-xs font-bold uppercase tracking-wider">
+              <Zap className="w-4 h-4 fill-[#FF4F00] text-[#FF4F00]" />
+              <span>Available Credit Balance</span>
             </div>
-            <div className="text-5xl sm:text-6xl font-black text-white tracking-tight">
+            <div className="font-heading text-5xl sm:text-6xl font-black text-[#201515] tracking-tight">
               <NumberTicker value={balance} />
-              <span className="text-xl sm:text-2xl font-normal text-violet-300 ml-3">
+              <span className="text-xl sm:text-2xl font-bold text-[#887E78] ml-3">
                 Credits
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-gray-400 max-w-md">
-              Your credits never expire. Seamlessly trigger refactoring, security audits, and SQL analyzers.
+            <p className="text-xs sm:text-sm text-[#5C524C] max-w-md">
+              Credits never expire. Seamlessly trigger refactoring, text summarization, and SEO generation.
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2 text-xs text-gray-300 w-full md:w-auto min-w-[240px]">
-            <span className="font-semibold text-gray-400 uppercase tracking-wider text-[11px] block">
-              Quick Top-up Simulation
+          <div className="p-5 rounded-2xl bg-[#FAF5EE] border border-[#EAE3D9] space-y-3 text-xs w-full md:w-auto min-w-[260px]">
+            <span className="font-bold text-[#201515] uppercase tracking-wider text-[11px] block">
+              Quick Test Top-up
             </span>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => handleTopUp(25)}
                 disabled={purchasingTier !== null}
-                className="flex-1 py-2 px-3 rounded-lg bg-violet-600/20 hover:bg-violet-600 text-violet-300 hover:text-white font-semibold text-xs border border-violet-500/30 transition-all cursor-pointer text-center"
+                className="flex-1 py-2 px-3 rounded-full bg-white hover:bg-[#F2ECE2] text-[#201515] font-bold text-xs border border-[#EAE3D9] transition-all cursor-pointer text-center"
               >
-                +25 Free
+                +25 Test
               </button>
               <button
                 type="button"
                 onClick={() => handleTopUp(100)}
                 disabled={purchasingTier !== null}
-                className="flex-1 py-2 px-3 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-black font-semibold text-xs border border-amber-500/30 transition-all cursor-pointer text-center"
+                className="btn-zap-primary flex-1 py-2 px-3 text-xs"
               >
-                +100 Boost
+                +100 Test
               </button>
             </div>
           </div>
-        </CardSpotlight>
+        </motion.div>
       </div>
 
-      {/* Top-Up Tier Cards */}
-      <div className="relative z-10 space-y-4">
+      {/* Pricing / Top-Up Tiers with BackgroundGradient on Popular */}
+      <div className="relative z-10 space-y-6">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">
-            Purchase Additional Credits
+          <h2 className="font-heading text-xl sm:text-2xl font-extrabold text-[#201515] tracking-tight">
+            Top-up Packages
           </h2>
-          <p className="text-xs text-gray-400">
-            Select a package to replenish your agent runner pool.
+          <p className="text-xs sm:text-sm text-[#5C524C]">
+            Instant replenishment with volume discounts.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {TIERS.map((tier) => (
-            <CardSpotlight
-              key={tier.credits}
-              className={cn(
-                "p-6 flex flex-col justify-between space-y-6 transition-all duration-300",
-                tier.popular
-                  ? "border-violet-500/40 bg-gradient-to-b from-violet-950/20 to-gray-900/60 shadow-[0_0_30px_-5px_rgba(139,92,246,0.2)]"
-                  : "border-white/10"
-              )}
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                    {tier.title}
-                  </span>
-                  {tier.popular && (
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                      Most Popular
-                    </span>
-                  )}
-                </div>
-
-                <div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-extrabold text-white">{tier.price}</span>
-                    <span className="text-xs text-gray-500">one-time</span>
-                  </div>
-                  <div className="inline-flex items-center gap-1.5 text-sm font-bold text-violet-300 mt-1">
-                    <Zap className="w-4 h-4 fill-violet-300" />
-                    <span>{tier.credits} Credits</span>
-                  </div>
-                </div>
-
-                <p className="text-xs text-gray-400 leading-relaxed">
-                  {tier.description}
-                </p>
-
-                <div className="pt-2 text-[11px] font-mono text-gray-500">
-                  {tier.perCredit}
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => handleTopUp(tier.credits)}
-                disabled={purchasingTier !== null}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+          {TIERS.map((tier) => {
+            const cardContent = (
+              <div
                 className={cn(
-                  "w-full py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer",
+                  "bg-white border rounded-3xl p-6 sm:p-8 flex flex-col justify-between space-y-6 relative transition-all shadow-xs h-full",
                   tier.popular
-                    ? "bg-violet-600 hover:bg-violet-500 text-white shadow-lg shadow-violet-600/30"
-                    : "bg-white/5 hover:bg-white/10 text-gray-200 border border-white/10"
+                    ? "border-transparent"
+                    : "border-[#EAE3D9] hover:border-[#FFB38A]"
                 )}
               >
-                {purchasingTier === tier.credits ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Processing Top-up…</span>
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="w-3.5 h-3.5" />
-                    <span>Simulate Top-Up</span>
-                  </>
+                {tier.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#FF4F00] text-white text-[11px] font-bold uppercase tracking-wider px-3.5 py-0.5 rounded-full shadow-sm z-20">
+                    Most Popular
+                  </div>
                 )}
-              </button>
-            </CardSpotlight>
-          ))}
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-heading text-lg font-bold text-[#201515]">{tier.title}</h3>
+                    <p className="text-xs text-[#5C524C] mt-1">{tier.description}</p>
+                  </div>
+
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-heading text-4xl font-extrabold text-[#201515]">{tier.price}</span>
+                    <span className="text-xs font-semibold text-[#887E78]">/ {tier.credits} credits</span>
+                  </div>
+
+                  <div className="pt-2 border-t border-[#F2ECE2] text-xs font-semibold text-[#FF4F00]">
+                    {tier.perCredit}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleTopUp(tier.credits)}
+                  disabled={purchasingTier !== null}
+                  className={cn(
+                    "w-full py-3 rounded-full font-bold text-xs transition-all cursor-pointer",
+                    tier.popular
+                      ? "btn-zap-primary"
+                      : "btn-zap-secondary"
+                  )}
+                >
+                  {purchasingTier === tier.credits ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" /> Adding Credits…
+                    </span>
+                  ) : (
+                    <span>Purchase {tier.credits} Credits</span>
+                  )}
+                </button>
+              </div>
+            );
+
+            return tier.popular ? (
+              <div key={tier.credits} className="h-full">
+                <BackgroundGradient className="rounded-3xl h-full" containerClassName="h-full">
+                  {cardContent}
+                </BackgroundGradient>
+              </div>
+            ) : (
+              <motion.div
+                key={tier.credits}
+                whileHover={{ y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="h-full"
+              >
+                {cardContent}
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Transaction Ledger Table */}
+      {/* Credit Ledger Table */}
       <div className="relative z-10 space-y-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">
+          <h2 className="font-heading text-xl sm:text-2xl font-extrabold text-[#201515] tracking-tight">
             Transaction Ledger
           </h2>
-          <p className="text-xs text-gray-400">
-            Audit trail of credit deposits, bonuses, and per-job deductions.
+          <p className="text-xs sm:text-sm text-[#5C524C]">
+            Verified audit record of all credit grants and deductions.
           </p>
         </div>
 
-        <CardSpotlight className="p-0 overflow-hidden">
+        <div className="bg-white border border-[#EAE3D9] rounded-3xl overflow-hidden shadow-xs">
           {loadingLedger ? (
-            <div className="p-8 text-center text-xs text-gray-400">Loading ledger…</div>
+            <div className="p-8 text-center text-sm text-[#887E78]">Loading ledger…</div>
           ) : ledger.length === 0 ? (
-            <div className="p-12 text-center text-xs text-gray-500">
-              No transactions recorded yet.
-            </div>
+            <div className="p-12 text-center text-sm text-[#887E78]">No transaction records yet.</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-white/5 bg-white/[0.02] text-gray-400">
-                    <th className="px-6 py-3.5 font-semibold">Transaction ID</th>
-                    <th className="px-6 py-3.5 font-semibold">Reason</th>
-                    <th className="px-6 py-3.5 font-semibold">Date</th>
-                    <th className="px-6 py-3.5 font-semibold">Associated Job</th>
-                    <th className="px-6 py-3.5 font-semibold text-right">Credit Delta</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-gray-300">
-                  {ledger.map((item) => {
-                    const isPositive = item.amount > 0;
-                    return (
-                      <tr key={item.id} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="px-6 py-4 font-mono text-gray-400">
-                          {item.id}
-                        </td>
-                        <td className="px-6 py-4 font-medium text-white capitalize">
-                          {item.reason.replace(/_/g, " ")}
-                        </td>
-                        <td className="px-6 py-4 text-gray-400">
-                          {formatDate(item.createdAt)}
-                        </td>
-                        <td className="px-6 py-4 font-mono">
-                          {item.jobId ? (
-                            <Link
-                              href={`/jobs/${item.jobId}`}
-                              className="text-violet-400 hover:text-violet-300 transition-colors"
-                            >
-                              {item.jobId}
-                            </Link>
-                          ) : (
-                            <span className="text-gray-600">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <span
-                            className={cn(
-                              "inline-flex items-center gap-1 font-bold text-xs px-2.5 py-1 rounded-full",
-                              isPositive
-                                ? "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20"
-                                : "text-rose-400 bg-rose-500/10 border border-rose-500/20"
-                            )}
-                          >
-                            {isPositive ? (
-                              <TrendingUp className="w-3 h-3" />
-                            ) : (
-                              <TrendingDown className="w-3 h-3" />
-                            )}
-                            {isPositive ? `+${item.amount}` : item.amount}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="divide-y divide-[#EAE3D9]">
+              {ledger.map((item, idx) => {
+                const isPositive = item.amount > 0;
+                return (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.03 }}
+                    className="p-4 sm:p-5 flex items-center justify-between hover:bg-[#FAF5EE] transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center",
+                        isPositive ? "bg-[#ECFDF5] text-[#059669]" : "bg-[#FFF1F2] text-[#E11D48]"
+                      )}>
+                        {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                      </div>
+                      <div>
+                        <p className="font-bold text-xs text-[#201515] capitalize">
+                          {item.reason?.replace(/_/g, " ") || (isPositive ? "Top Up" : "Agent Run")}
+                        </p>
+                        <p className="text-[11px] text-[#887E78]">{formatDate(item.createdAt)}</p>
+                      </div>
+                    </div>
+
+                    <div className={cn(
+                      "font-mono font-bold text-sm",
+                      isPositive ? "text-[#059669]" : "text-[#BE123C]"
+                    )}>
+                      {isPositive ? `+${item.amount}` : item.amount} credits
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
-        </CardSpotlight>
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   Shield,
   Bot,
@@ -13,11 +14,8 @@ import {
   Power,
   Zap,
   ArrowRight,
-  CheckCircle,
   AlertTriangle,
-  Lock,
 } from "lucide-react";
-import CardSpotlight from "@/components/CardSpotlight";
 import StatusBadge from "@/components/StatusBadge";
 import BackgroundBeams from "@/components/BackgroundBeams";
 import { useAuth } from "@/contexts/AuthContext";
@@ -89,23 +87,21 @@ export default function AdminPage() {
     }
   };
 
-  const isAdmin = user?.role === "admin" || !user; // Allow preview with badge if guest
-
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+    <div className="relative min-h-[calc(100vh-4.5rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8 bg-[#FFFDF9]">
       <BackgroundBeams />
 
       {/* Header */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.08]">
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EAE3D9]">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-violet-400">
-            <Shield className="w-3.5 h-3.5" />
-            <span>Platform Administration</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-[#FFF2EB] text-[#D43F00] border border-[#FFD6C2]">
+            <span className="text-[#FF4F00] font-black">_</span>
+            <span>Platform Governance</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">
-            Admin Studio & Governance
+          <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-[#201515] tracking-tight mt-2">
+            Admin Studio
           </h1>
-          <p className="text-xs sm:text-sm text-gray-400">
+          <p className="text-sm text-[#5C524C]">
             Manage published agents, inspect system-wide job executions, and audit user balances.
           </p>
         </div>
@@ -113,7 +109,7 @@ export default function AdminPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/admin/agents/new"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 shadow-lg shadow-violet-600/30 transition-all cursor-pointer"
+            className="btn-zap-primary text-xs py-2.5 px-5 font-bold"
           >
             <Plus className="w-4 h-4" />
             <span>Create New Agent</span>
@@ -121,86 +117,78 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="relative z-10 flex items-center gap-2 p-1.5 bg-white/[0.03] border border-white/5 rounded-2xl w-fit">
-        <button
-          type="button"
-          onClick={() => setActiveTab("agents")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
-            activeTab === "agents"
-              ? "bg-violet-600 text-white shadow-md shadow-violet-600/30"
-              : "text-gray-400 hover:text-white"
-          )}
-        >
-          <Bot className="w-3.5 h-3.5" />
-          <span>Agents ({agents.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("jobs")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
-            activeTab === "jobs"
-              ? "bg-violet-600 text-white shadow-md shadow-violet-600/30"
-              : "text-gray-400 hover:text-white"
-          )}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span>All Jobs ({jobs.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("users")}
-          className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer",
-            activeTab === "users"
-              ? "bg-violet-600 text-white shadow-md shadow-violet-600/30"
-              : "text-gray-400 hover:text-white"
-          )}
-        >
-          <Users className="w-3.5 h-3.5" />
-          <span>Users & Credits ({users.length})</span>
-        </button>
+      {/* Tabs with Aceternity animated indicator pill */}
+      <div className="relative z-10 flex items-center gap-1 p-1 bg-[#FAF5EE] border border-[#EAE3D9] rounded-full w-fit">
+        {(
+          [
+            { id: "agents", label: `Agents (${agents.length})`, icon: Bot },
+            { id: "jobs", label: `All Jobs (${jobs.length})`, icon: Layers },
+            { id: "users", label: `Users & Credits (${users.length})`, icon: Users },
+          ] as const
+        ).map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-colors cursor-pointer z-10",
+                isActive
+                  ? "text-[#FFFDF9]"
+                  : "text-[#5C524C] hover:text-[#201515]"
+              )}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="adminTabPill"
+                  className="absolute inset-0 bg-[#201515] rounded-full z-[-1] shadow-xs"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+              <Icon className={cn("w-3.5 h-3.5", isActive ? "text-[#FF4F00]" : "text-[#887E78]")} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Tab 1: Agents */}
       {activeTab === "agents" && (
         <div className="relative z-10 space-y-4">
-          <CardSpotlight className="p-0 overflow-hidden">
+          <div className="bg-white border border-[#EAE3D9] rounded-3xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-white/5 bg-white/[0.02] text-gray-400">
-                    <th className="px-6 py-3.5 font-semibold">Agent Name</th>
-                    <th className="px-6 py-3.5 font-semibold">Category</th>
-                    <th className="px-6 py-3.5 font-semibold">Cost</th>
-                    <th className="px-6 py-3.5 font-semibold">Inputs</th>
-                    <th className="px-6 py-3.5 font-semibold">Active State</th>
-                    <th className="px-6 py-3.5 font-semibold text-right">Actions</th>
+                  <tr className="border-b border-[#EAE3D9] bg-[#FAF5EE] text-[#5C524C]">
+                    <th className="px-6 py-3.5 font-bold">Agent Name</th>
+                    <th className="px-6 py-3.5 font-bold">Category</th>
+                    <th className="px-6 py-3.5 font-bold">Cost</th>
+                    <th className="px-6 py-3.5 font-bold">Inputs</th>
+                    <th className="px-6 py-3.5 font-bold">Active State</th>
+                    <th className="px-6 py-3.5 font-bold text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-gray-300">
+                <tbody className="divide-y divide-[#EAE3D9] text-[#201515]">
                   {agents.map((agent) => (
-                    <tr key={agent.id} className="hover:bg-white/[0.02] transition-colors">
+                    <tr key={agent.id} className="hover:bg-[#FAF5EE] transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-semibold text-white">{agent.name}</div>
-                        <div className="text-[11px] text-gray-500 font-mono">{agent.id}</div>
+                        <div className="font-bold text-[#201515]">{agent.name}</div>
+                        <div className="text-[11px] text-[#887E78] font-mono">{agent.id}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-violet-500/10 text-violet-300 border border-violet-500/20 font-semibold">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-[#FFF2EB] text-[#D43F00] border border-[#FFD6C2] font-bold">
                           {agent.category || "General"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 font-semibold text-amber-300">
-                          <Zap className="w-3 h-3 fill-amber-300" />
+                        <span className="inline-flex items-center gap-1 font-bold text-[#201515]">
+                          <Zap className="w-3 h-3 fill-[#FF4F00] text-[#FF4F00]" />
                           {agent.creditCost} credits
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-mono text-gray-400">
+                      <td className="px-6 py-4 font-mono text-[#5C524C]">
                         {agent.inputSchema?.fields?.length || 0} fields
                       </td>
                       <td className="px-6 py-4">
@@ -208,10 +196,10 @@ export default function AdminPage() {
                           type="button"
                           onClick={() => handleToggle(agent.id, agent.isActive !== false)}
                           className={cn(
-                            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border transition-all cursor-pointer",
+                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all cursor-pointer",
                             agent.isActive !== false
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
-                              : "bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700"
+                              ? "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]"
+                              : "bg-[#F2ECE2] text-[#887E78] border-[#EAE3D9]"
                           )}
                         >
                           <Power className="w-3 h-3" />
@@ -221,7 +209,7 @@ export default function AdminPage() {
                       <td className="px-6 py-4 text-right space-x-2">
                         <Link
                           href={`/admin/agents/${agent.id}`}
-                          className="inline-flex items-center gap-1 text-xs text-gray-300 hover:text-white p-1.5 hover:bg-white/5 rounded-lg transition-colors"
+                          className="inline-flex items-center gap-1 text-xs text-[#5C524C] hover:text-[#201515] p-1.5 hover:bg-[#FAF5EE] rounded-lg transition-colors"
                           title="Edit Agent"
                         >
                           <Edit className="w-3.5 h-3.5" />
@@ -229,7 +217,7 @@ export default function AdminPage() {
                         <button
                           type="button"
                           onClick={() => setAgentToDelete(agent)}
-                          className="inline-flex items-center gap-1 text-xs text-rose-400 hover:text-rose-300 p-1.5 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                          className="inline-flex items-center gap-1 text-xs text-[#E11D48] hover:text-[#BE123C] p-1.5 hover:bg-[#FFF1F2] rounded-lg transition-colors cursor-pointer"
                           title="Delete Agent"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -240,48 +228,48 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-          </CardSpotlight>
+          </div>
         </div>
       )}
 
       {/* Tab 2: All Jobs */}
       {activeTab === "jobs" && (
         <div className="relative z-10 space-y-4">
-          <CardSpotlight className="p-0 overflow-hidden">
+          <div className="bg-white border border-[#EAE3D9] rounded-3xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-white/5 bg-white/[0.02] text-gray-400">
-                    <th className="px-6 py-3.5 font-semibold">Job ID</th>
-                    <th className="px-6 py-3.5 font-semibold">Agent</th>
-                    <th className="px-6 py-3.5 font-semibold">Status</th>
-                    <th className="px-6 py-3.5 font-semibold">Duration</th>
-                    <th className="px-6 py-3.5 font-semibold">Created At</th>
-                    <th className="px-6 py-3.5 font-semibold text-right">Action</th>
+                  <tr className="border-b border-[#EAE3D9] bg-[#FAF5EE] text-[#5C524C]">
+                    <th className="px-6 py-3.5 font-bold">Job ID</th>
+                    <th className="px-6 py-3.5 font-bold">Agent</th>
+                    <th className="px-6 py-3.5 font-bold">Status</th>
+                    <th className="px-6 py-3.5 font-bold">Duration</th>
+                    <th className="px-6 py-3.5 font-bold">Created At</th>
+                    <th className="px-6 py-3.5 font-bold text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-gray-300">
+                <tbody className="divide-y divide-[#EAE3D9] text-[#201515]">
                   {jobs.map((job) => (
-                    <tr key={job.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 font-mono font-medium text-gray-400">
-                        {job.id}
+                    <tr key={job.id} className="hover:bg-[#FAF5EE] transition-colors">
+                      <td className="px-6 py-4 font-mono font-medium text-[#887E78]">
+                        #{job.id.slice(0, 8)}
                       </td>
-                      <td className="px-6 py-4 font-semibold text-white">
+                      <td className="px-6 py-4 font-bold text-[#201515]">
                         {job.agentName || job.agentId}
                       </td>
                       <td className="px-6 py-4">
                         <StatusBadge status={job.status} />
                       </td>
-                      <td className="px-6 py-4 font-mono text-gray-400">
+                      <td className="px-6 py-4 font-mono text-[#5C524C]">
                         {job.durationMs ? `${job.durationMs}ms` : "—"}
                       </td>
-                      <td className="px-6 py-4 text-gray-400">
+                      <td className="px-6 py-4 text-[#5C524C]">
                         {formatDate(job.createdAt)}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <Link
                           href={`/jobs/${job.id}`}
-                          className="inline-flex items-center gap-1 text-xs text-violet-400 hover:text-white px-2.5 py-1 rounded-md bg-white/5 hover:bg-violet-600 transition-all"
+                          className="inline-flex items-center gap-1 text-xs text-[#FF4F00] hover:underline font-bold"
                         >
                           <span>Inspect</span>
                           <ArrowRight className="w-3 h-3" />
@@ -292,49 +280,49 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-          </CardSpotlight>
+          </div>
         </div>
       )}
 
       {/* Tab 3: Users */}
       {activeTab === "users" && (
         <div className="relative z-10 space-y-4">
-          <CardSpotlight className="p-0 overflow-hidden">
+          <div className="bg-white border border-[#EAE3D9] rounded-3xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-white/5 bg-white/[0.02] text-gray-400">
-                    <th className="px-6 py-3.5 font-semibold">User Email</th>
-                    <th className="px-6 py-3.5 font-semibold">Role</th>
-                    <th className="px-6 py-3.5 font-semibold">Credits Balance</th>
-                    <th className="px-6 py-3.5 font-semibold">Joined Date</th>
+                  <tr className="border-b border-[#EAE3D9] bg-[#FAF5EE] text-[#5C524C]">
+                    <th className="px-6 py-3.5 font-bold">User Email</th>
+                    <th className="px-6 py-3.5 font-bold">Role</th>
+                    <th className="px-6 py-3.5 font-bold">Credits Balance</th>
+                    <th className="px-6 py-3.5 font-bold">Joined Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 text-gray-300">
+                <tbody className="divide-y divide-[#EAE3D9] text-[#201515]">
                   {users.map((u) => (
-                    <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 font-semibold text-white">
+                    <tr key={u.id} className="hover:bg-[#FAF5EE] transition-colors">
+                      <td className="px-6 py-4 font-bold text-[#201515]">
                         {u.email}
                       </td>
                       <td className="px-6 py-4">
                         <span
                           className={cn(
-                            "px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider",
+                            "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
                             u.role === "admin"
-                              ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
-                              : "bg-white/5 text-gray-400 border border-white/10"
+                              ? "bg-[#FFF2EB] text-[#D43F00] border border-[#FFD6C2]"
+                              : "bg-[#FAF5EE] text-[#5C524C] border border-[#EAE3D9]"
                           )}
                         >
                           {u.role}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 font-mono font-bold text-amber-300">
-                          <Zap className="w-3 h-3 fill-amber-300" />
+                        <span className="inline-flex items-center gap-1 font-mono font-bold text-[#201515]">
+                          <Zap className="w-3 h-3 fill-[#FF4F00] text-[#FF4F00]" />
                           {u.creditsBalance}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-gray-400">
+                      <td className="px-6 py-4 text-[#5C524C]">
                         {formatDate(u.createdAt)}
                       </td>
                     </tr>
@@ -342,35 +330,35 @@ export default function AdminPage() {
                 </tbody>
               </table>
             </div>
-          </CardSpotlight>
+          </div>
         </div>
       )}
 
       {/* Delete Confirmation Modal */}
       {agentToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-gray-950 p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center gap-3 text-rose-400">
-              <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-3xl border border-[#EAE3D9] bg-white p-6 space-y-4 shadow-xl">
+            <div className="flex items-center gap-3 text-[#E11D48]">
+              <div className="p-2 rounded-xl bg-[#FFF1F2] border border-[#FECDD3]">
                 <AlertTriangle className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-white">Confirm Deletion</h3>
+              <h3 className="font-heading text-base font-bold text-[#201515]">Confirm Deletion</h3>
             </div>
-            <p className="text-xs text-gray-300 leading-relaxed">
-              Are you sure you want to delete <strong className="text-white">{agentToDelete.name}</strong>? This action cannot be undone.
+            <p className="text-xs text-[#5C524C] leading-relaxed">
+              Are you sure you want to delete <strong className="text-[#201515]">{agentToDelete.name}</strong>? This action cannot be undone.
             </p>
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setAgentToDelete(null)}
-                className="px-4 py-2 rounded-xl text-xs font-medium text-gray-300 hover:text-white bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                className="btn-zap-secondary text-xs px-4 py-2"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleDelete}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-rose-600 hover:bg-rose-500 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-full text-xs font-bold text-white bg-[#E11D48] hover:bg-[#BE123C] transition-colors cursor-pointer"
               >
                 Delete Agent
               </button>

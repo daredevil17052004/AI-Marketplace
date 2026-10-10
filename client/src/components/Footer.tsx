@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Sparkles, Terminal } from "lucide-react";
+import { Terminal, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -22,114 +22,130 @@ function TwitterIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/[0.08] bg-gray-950/80 backdrop-blur-md mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          {/* Col 1 */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-white text-base">AI Marketplace</span>
+    <footer className="border-t border-[#EAE3D9] bg-[#FAF5EE] mt-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 mb-14">
+          {/* Brand Col */}
+          <div className="md:col-span-2 space-y-4">
+            <div className="flex items-center">
+              <span className="w-5 h-1.5 bg-[#ff4f00] rounded-[1px] mr-1.5 self-end mb-1" />
+              <span className="font-display font-medium text-[#201515] text-2xl tracking-tight">
+                agent<span className="text-[#ff4f00]">flow</span>
+              </span>
             </div>
-            <p className="text-xs text-gray-400 leading-relaxed max-w-xs">
-              Execute production-grade AI agents via dynamic schema forms. Powered by Next.js, Lenis, and modern autonomous architectures.
+            <p className="text-sm text-[#5C524C] leading-relaxed max-w-sm">
+              Empowering builders, creators, and teams to automate mission-critical tasks with autonomous AI agents. Powered by Gemini 2.5, BullMQ, and Redis.
             </p>
-            <div className="flex items-center gap-3 text-gray-400 pt-2">
-              <a href="https://github.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors" aria-label="GitHub">
+            <div className="flex items-center gap-3 pt-2">
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noreferrer"
+                className="w-9 h-9 rounded-full bg-white border border-[#EAE3D9] flex items-center justify-center text-[#5C524C] hover:text-[#201515] hover:border-[#D5CBC0] transition-colors"
+                aria-label="GitHub"
+              >
                 <GithubIcon className="w-4 h-4" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors" aria-label="Twitter">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noreferrer"
+                className="w-9 h-9 rounded-full bg-white border border-[#EAE3D9] flex items-center justify-center text-[#5C524C] hover:text-[#201515] hover:border-[#D5CBC0] transition-colors"
+                aria-label="Twitter"
+              >
                 <TwitterIcon className="w-4 h-4" />
               </a>
-              <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                <Terminal className="w-3 h-3" /> API Online
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#047857] bg-[#ECFDF5] px-3 py-1 rounded-full border border-[#A7F3D0]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#059669] animate-pulse" />
+                All Systems Operational
               </span>
             </div>
           </div>
 
-          {/* Col 2 */}
+          {/* Links 1 */}
           <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-white uppercase tracking-wider">Explore</h4>
-            <ul className="space-y-2 text-xs text-gray-400">
+            <h4 className="font-heading text-xs font-bold text-[#201515] uppercase tracking-wider">Product</h4>
+            <ul className="space-y-2.5 text-sm text-[#5C524C]">
               <li>
-                <Link href="/agents" className="hover:text-violet-400 transition-colors">
+                <Link href="/agents" className="hover:text-[#FF4F00] transition-colors">
                   Agent Marketplace
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="hover:text-violet-400 transition-colors">
-                  User Dashboard
+                <Link href="/dashboard" className="hover:text-[#FF4F00] transition-colors">
+                  Workspace Dashboard
                 </Link>
               </li>
               <li>
-                <Link href="/jobs" className="hover:text-violet-400 transition-colors">
-                  Job History & Outputs
+                <Link href="/jobs" className="hover:text-[#FF4F00] transition-colors">
+                  Live Job Feeds
                 </Link>
               </li>
               <li>
-                <Link href="/credits" className="hover:text-violet-400 transition-colors">
-                  Credits & Billing
+                <Link href="/credits" className="hover:text-[#FF4F00] transition-colors">
+                  Credit Top-Ups
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Col 3 */}
+          {/* Links 2 */}
           <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-white uppercase tracking-wider">Developers</h4>
-            <ul className="space-y-2 text-xs text-gray-400">
+            <h4 className="font-heading text-xs font-bold text-[#201515] uppercase tracking-wider">Agents</h4>
+            <ul className="space-y-2.5 text-sm text-[#5C524C]">
               <li>
-                <Link href="/admin" className="hover:text-violet-400 transition-colors">
-                  Admin Studio
+                <Link href="/agents" className="hover:text-[#FF4F00] transition-colors">
+                  Code Refactoring
                 </Link>
               </li>
               <li>
-                <Link href="/admin/agents/new" className="hover:text-violet-400 transition-colors">
-                  Publish New Agent
+                <Link href="/agents" className="hover:text-[#FF4F00] transition-colors">
+                  Text Summarization
                 </Link>
               </li>
               <li>
-                <a href="#schema" className="hover:text-violet-400 transition-colors">
-                  Dynamic JSON Schema Spec
-                </a>
+                <Link href="/agents" className="hover:text-[#FF4F00] transition-colors">
+                  SEO Copywriting
+                </Link>
               </li>
               <li>
-                <a href="/health" className="hover:text-violet-400 transition-colors">
-                  System Healthcheck
-                </a>
+                <Link href="/agents" className="hover:text-[#FF4F00] transition-colors">
+                  Regex & Schema
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Col 4 */}
+          {/* Links 3 */}
           <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-white uppercase tracking-wider">Account</h4>
-            <ul className="space-y-2 text-xs text-gray-400">
+            <h4 className="font-heading text-xs font-bold text-[#201515] uppercase tracking-wider">Platform</h4>
+            <ul className="space-y-2.5 text-sm text-[#5C524C]">
               <li>
-                <Link href="/login" className="hover:text-violet-400 transition-colors">
-                  Sign In
+                <Link href="/admin" className="hover:text-[#FF4F00] transition-colors">
+                  Admin Console
                 </Link>
               </li>
               <li>
-                <Link href="/register" className="hover:text-violet-400 transition-colors">
-                  Create Free Account
-                </Link>
+                <a href="http://localhost:4000/health" target="_blank" rel="noreferrer" className="hover:text-[#FF4F00] transition-colors">
+                  API Status
+                </a>
               </li>
               <li>
-                <span className="text-violet-400">⚡ 50 Free Signup Credits</span>
+                <a href="http://localhost:8081" target="_blank" rel="noreferrer" className="hover:text-[#FF4F00] transition-colors">
+                  Database Adminer
+                </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-white/[0.05] pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
-          <p>© {new Date().getFullYear()} AI Marketplace. Built with Next.js, Lenis & Aceternity UI.</p>
-          <div className="flex gap-6">
-            <span className="hover:text-gray-400 transition-colors">Privacy Policy</span>
-            <span className="hover:text-gray-400 transition-colors">Terms of Service</span>
-            <span className="hover:text-gray-400 transition-colors">Security</span>
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-[#EAE3D9] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#887E78]">
+          <p>© {new Date().getFullYear()} agentflow. Built with Zapier design principles.</p>
+          <div className="flex items-center gap-6">
+            <span className="hover:text-[#201515] cursor-pointer">Privacy Policy</span>
+            <span className="hover:text-[#201515] cursor-pointer">Terms of Service</span>
+            <span className="hover:text-[#201515] cursor-pointer">Security</span>
           </div>
         </div>
       </div>

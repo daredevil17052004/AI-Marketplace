@@ -5,22 +5,17 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Clock,
-  CheckCircle,
-  AlertCircle,
   RefreshCw,
-  Terminal,
   Bot,
   Copy,
   Check,
-  Sparkles,
+  AlertCircle,
 } from "lucide-react";
-import CardSpotlight from "@/components/CardSpotlight";
 import StatusBadge from "@/components/StatusBadge";
 import JsonViewer from "@/components/JsonViewer";
 import BackgroundBeams from "@/components/BackgroundBeams";
 import { fetchJob, Job } from "@/lib/api";
-import { formatDate, cn } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 export default function JobDetailPage() {
   const params = useParams();
@@ -70,11 +65,11 @@ export default function JobDetailPage() {
 
   if (loading) {
     return (
-      <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-8">
+      <div className="relative min-h-[calc(100vh-4.5rem)] flex items-center justify-center p-8 bg-[#FFFDF9]">
         <BackgroundBeams />
         <div className="text-center space-y-3 z-10">
-          <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-gray-400">Loading Job Execution Telemetry…</p>
+          <div className="w-10 h-10 border-4 border-[#EAE3D9] border-t-[#FF4F00] rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-semibold text-[#5C524C]">Loading Job Telemetry…</p>
         </div>
       </div>
     );
@@ -82,15 +77,15 @@ export default function JobDetailPage() {
 
   if (error || !job) {
     return (
-      <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-8">
+      <div className="relative min-h-[calc(100vh-4.5rem)] flex items-center justify-center p-8 bg-[#FFFDF9]">
         <BackgroundBeams />
-        <div className="text-center space-y-4 max-w-md z-10">
-          <AlertCircle className="w-10 h-10 text-rose-400 mx-auto" />
-          <h2 className="text-xl font-bold text-white">Job Not Found</h2>
-          <p className="text-xs text-gray-400">{error || "Requested job ID was not found."}</p>
+        <div className="text-center space-y-4 max-w-md z-10 bg-white border border-[#EAE3D9] p-8 rounded-3xl shadow-sm">
+          <AlertCircle className="w-10 h-10 text-[#E11D48] mx-auto" />
+          <h2 className="font-heading text-xl font-bold text-[#201515]">Job Not Found</h2>
+          <p className="text-xs text-[#5C524C]">{error || "Requested job ID was not found."}</p>
           <Link
             href="/jobs"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20"
+            className="btn-zap-secondary inline-flex text-xs px-4 py-2"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Job History</span>
@@ -103,45 +98,45 @@ export default function JobDetailPage() {
   const isTerminal = job.status === "completed" || job.status === "failed";
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+    <div className="relative min-h-[calc(100vh-4.5rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8 bg-[#FFFDF9]">
       <BackgroundBeams />
 
       {/* Back button & Polling Indicator */}
       <div className="relative z-10 flex items-center justify-between">
         <Link
           href="/jobs"
-          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5C524C] hover:text-[#201515] transition-colors bg-white border border-[#EAE3D9] px-3.5 py-1.5 rounded-full shadow-xs"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Jobs</span>
         </Link>
 
         {!isTerminal && (
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20">
-            <RefreshCw className="w-3 h-3 animate-spin" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE]">
+            <RefreshCw className="w-3 h-3 animate-spin text-[#2563EB]" />
             <span>Live polling active…</span>
           </div>
         )}
       </div>
 
-      {/* Metadata Spotlight Card */}
+      {/* Metadata Card */}
       <div className="relative z-10">
-        <CardSpotlight className="p-6 sm:p-8 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/5">
+        <div className="bg-white border border-[#EAE3D9] rounded-3xl p-6 sm:p-8 space-y-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#EAE3D9]">
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs text-gray-400">
+              <div className="flex items-center gap-2 text-xs text-[#887E78]">
                 <span className="font-mono">JOB ID: {job.id}</span>
                 <button
                   type="button"
                   onClick={copyJobId}
-                  className="p-1 hover:text-white rounded transition-colors cursor-pointer"
+                  className="p-1 hover:text-[#201515] rounded transition-colors cursor-pointer"
                   title="Copy Job ID"
                 >
-                  {copiedId ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedId ? <Check className="w-3.5 h-3.5 text-[#059669]" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
-              <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-                <span>{job.agentName || job.agentId}</span>
+              <h1 className="font-heading text-2xl font-bold text-[#201515] tracking-tight">
+                {job.agentName || job.agentId}
               </h1>
             </div>
 
@@ -149,7 +144,7 @@ export default function JobDetailPage() {
               <StatusBadge status={job.status} className="px-3.5 py-1.5 text-sm" />
               <Link
                 href={`/agents/${job.agentId}`}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-violet-600/20 text-violet-300 hover:bg-violet-600 hover:text-white border border-violet-500/30 transition-all"
+                className="btn-zap-primary text-xs py-2 px-4"
               >
                 <Bot className="w-3.5 h-3.5" />
                 <span>Re-run Agent</span>
@@ -160,81 +155,64 @@ export default function JobDetailPage() {
           {/* Metric telemetry strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div className="space-y-1">
-              <span className="text-gray-400 uppercase tracking-wider text-[11px] block">Created At</span>
-              <p className="font-medium text-white">{formatDate(job.createdAt)}</p>
+              <span className="text-[#887E78] uppercase tracking-wider text-[11px] font-bold block">Created At</span>
+              <p className="font-medium text-[#201515]">{formatDate(job.createdAt)}</p>
             </div>
             <div className="space-y-1">
-              <span className="text-gray-400 uppercase tracking-wider text-[11px] block">Completed At</span>
-              <p className="font-medium text-white">{formatDate(job.completedAt)}</p>
+              <span className="text-[#887E78] uppercase tracking-wider text-[11px] font-bold block">Completed At</span>
+              <p className="font-medium text-[#201515]">{formatDate(job.completedAt)}</p>
             </div>
             <div className="space-y-1">
-              <span className="text-gray-400 uppercase tracking-wider text-[11px] block">Duration</span>
-              <p className="font-mono font-medium text-violet-300">
+              <span className="text-[#887E78] uppercase tracking-wider text-[11px] font-bold block">Duration</span>
+              <p className="font-mono font-bold text-[#FF4F00]">
                 {job.durationMs ? `${job.durationMs}ms` : job.status === "processing" ? "Running…" : "—"}
               </p>
             </div>
             <div className="space-y-1">
-              <span className="text-gray-400 uppercase tracking-wider text-[11px] block">Runtime Engine</span>
-              <p className="font-medium text-emerald-400">Sandboxed Node/LLM</p>
+              <span className="text-[#887E78] uppercase tracking-wider text-[11px] font-bold block">Engine</span>
+              <p className="font-bold text-[#059669]">BullMQ & Gemini</p>
             </div>
           </div>
-        </CardSpotlight>
+        </div>
       </div>
 
-      {/* Error Banner if failed */}
-      {job.status === "failed" && (
-        <div className="relative z-10 p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <h4 className="font-bold text-sm text-rose-200">Execution Error Encountered</h4>
-            <p className="text-rose-300/90 leading-relaxed font-mono">
-              {job.errorMessage || "The AI agent reported a runtime timeout or failed prompt execution."}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Processing Banner if in flight */}
-      {job.status === "processing" && (
-        <div className="relative z-10 p-6 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-200 text-xs flex items-center gap-4">
-          <div className="w-6 h-6 border-2 border-sky-400 border-t-transparent rounded-full animate-spin shrink-0" />
-          <div>
-            <h4 className="font-bold text-sm text-sky-100">Worker Executing Prompt Pipeline</h4>
-            <p className="text-sky-300/80 mt-0.5">
-              Processing structured inputs. The page will auto-update as soon as the agent completes.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Two Payload Viewers: Input & Output */}
-      <div className="relative z-10 space-y-6">
-        {/* Output Result */}
-        {job.status === "completed" && job.outputResult && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold uppercase tracking-wider">
-              <Sparkles className="w-4 h-4" />
-              <span>Agent Output Result</span>
-            </div>
-            <JsonViewer
-              data={job.outputResult}
-              title="Execution Output Result"
-              className="border-emerald-500/20"
-            />
-          </div>
-        )}
-
+      {/* Input / Output Panels */}
+      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Payload */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-gray-400 text-xs font-semibold uppercase tracking-wider">
-            <Terminal className="w-4 h-4" />
-            <span>Submitted Input Payload</span>
+        <div className="bg-white border border-[#EAE3D9] rounded-3xl p-6 sm:p-8 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-[#EAE3D9]">
+            <h3 className="font-heading font-bold text-[#201515] text-base">Input Payload</h3>
+            <span className="text-xs font-mono text-[#887E78]">JSON Schema</span>
           </div>
-          <JsonViewer
-            data={job.inputPayload || {}}
-            title="Job Input Parameters"
-            defaultCollapsed={job.status === "completed"}
-          />
+          <div className="bg-[#FAF5EE] border border-[#EAE3D9] rounded-2xl p-4 overflow-x-auto">
+            <JsonViewer data={job.inputPayload || {}} />
+          </div>
+        </div>
+
+        {/* Output Result */}
+        <div className="bg-white border border-[#EAE3D9] rounded-3xl p-6 sm:p-8 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-[#EAE3D9]">
+            <h3 className="font-heading font-bold text-[#201515] text-base">Output Result</h3>
+            <span className="text-xs font-mono text-[#887E78]">Execution Data</span>
+          </div>
+
+          {job.status === "failed" ? (
+            <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-5 text-xs text-[#BE123C] space-y-1">
+              <p className="font-bold">Error reported by agent:</p>
+              <p>{job.errorMessage || "Unknown error during job execution."}</p>
+            </div>
+          ) : job.status === "completed" ? (
+            <div className="bg-[#FAF5EE] border border-[#EAE3D9] rounded-2xl p-4 overflow-x-auto">
+              <JsonViewer data={job.outputResult || {}} />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center p-12 text-center space-y-3 bg-[#FAF5EE] border border-[#EAE3D9] rounded-2xl">
+              <div className="w-8 h-8 border-3 border-[#EAE3D9] border-t-[#FF4F00] rounded-full animate-spin" />
+              <p className="text-xs font-semibold text-[#5C524C]">
+                Agent is running in the background worker queue…
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

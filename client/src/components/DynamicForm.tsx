@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { SchemaField } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { Sparkles, Loader2, AlertCircle } from "lucide-react";
+import { Zap, Loader2, AlertCircle, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 interface DynamicFormProps {
   fields: SchemaField[];
@@ -59,8 +60,8 @@ export default function DynamicForm({
     fields.forEach((f) => {
       if (f.required) {
         const val = formData[f.name];
-        if (val === undefined || val === "" || val === null) {
-          errors[f.name] = `${f.label || f.name} is required.`;
+        if (val === undefined || val === null || val === "") {
+          errors[f.name] = `${f.label || f.name} is required`;
         }
       }
     });
@@ -70,44 +71,60 @@ export default function DynamicForm({
       return;
     }
 
+    if (!hasEnoughCredits) {
+      return;
+    }
+
     await onSubmit(formData);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Credit warning banner if balance too low */}
+      {!hasEnoughCredits && (
+        <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-[#E11D48] shrink-0 mt-0.5" />
+          <div className="text-xs">
+            <p className="font-bold text-[#BE123C]">Insufficient credits</p>
+            <p className="text-[#9F1239] mt-0.5">
+              This agent requires {creditCost} credit{creditCost !== 1 ? "s" : ""}, but you only have {userBalance}.
+            </p>
+            <Link
+              href="/credits"
+              className="inline-flex items-center gap-1 font-bold text-[#FF4F00] hover:underline mt-2"
+            >
+              Top up credits now <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic Fields */}
       <div className="space-y-5">
         {fields.map((field) => {
-          const fieldId = `field-${field.name}`;
-          const isError = Boolean(formErrors[field.name]);
+          const value = formData[field.name];
+          const error = formErrors[field.name];
 
           return (
             <div key={field.name} className="space-y-2">
               <div className="flex items-center justify-between">
-                <label
-                  htmlFor={fieldId}
-                  className="block text-sm font-semibold text-gray-200"
-                >
+                <label className="block text-sm font-bold text-[#201515]">
                   {field.label || field.name}
-                  {field.required && <span className="text-violet-400 ml-1">*</span>}
+                  {field.required && <span className="text-[#FF4F00] ml-1">*</span>}
                 </label>
-                <span className="text-[11px] text-gray-500 uppercase tracking-wider">
-                  {field.type}
-                </span>
+                <span className="text-[11px] font-mono text-[#887E78] uppercase">{field.type}</span>
               </div>
 
               {/* Text / Input */}
               {field.type === "text" && (
                 <input
-                  id={fieldId}
                   type="text"
-                  value={(formData[field.name] as string) || ""}
+                  value={(value as string) || ""}
                   onChange={(e) => handleChange(field.name, e.target.value)}
                   placeholder={field.placeholder || `Enter ${field.label || field.name}...`}
                   className={cn(
-                    "w-full px-4 py-3 bg-gray-950/60 border rounded-xl text-sm text-gray-100 placeholder-gray-500 outline-none transition-all duration-200",
-                    isError
-                      ? "border-rose-500 focus:ring-2 focus:ring-rose-500/20"
-                      : "border-white/10 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+                    "w-full bg-white border border-[#D5CBC0] text-[#201515] rounded-xl px-4 py-3 text-sm focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20 focus:outline-none transition-all placeholder:text-[#9C9087]",
+                    error && "border-[#E11D48] focus:border-[#E11D48] focus:ring-[#E11D48]/20"
                   )}
                 />
               )}
@@ -115,33 +132,13 @@ export default function DynamicForm({
               {/* Textarea */}
               {field.type === "textarea" && (
                 <textarea
-                  id={fieldId}
-                  rows={4}
-                  value={(formData[field.name] as string) || ""}
+                  rows={5}
+                  value={(value as string) || ""}
                   onChange={(e) => handleChange(field.name, e.target.value)}
                   placeholder={field.placeholder || `Enter ${field.label || field.name}...`}
                   className={cn(
-                    "w-full px-4 py-3 bg-gray-950/60 border rounded-xl text-sm text-gray-100 placeholder-gray-500 outline-none transition-all duration-200 resize-y",
-                    isError
-                      ? "border-rose-500 focus:ring-2 focus:ring-rose-500/20"
-                      : "border-white/10 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
-                  )}
-                />
-              )}
-
-              {/* Number */}
-              {field.type === "number" && (
-                <input
-                  id={fieldId}
-                  type="number"
-                  value={(formData[field.name] as number) ?? ""}
-                  onChange={(e) => handleChange(field.name, parseFloat(e.target.value) || 0)}
-                  placeholder={field.placeholder || "0"}
-                  className={cn(
-                    "w-full px-4 py-3 bg-gray-950/60 border rounded-xl text-sm text-gray-100 placeholder-gray-500 outline-none transition-all duration-200",
-                    isError
-                      ? "border-rose-500 focus:ring-2 focus:ring-rose-500/20"
-                      : "border-white/10 focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20"
+                    "w-full bg-white border border-[#D5CBC0] text-[#201515] rounded-xl p-4 text-sm focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20 focus:outline-none transition-all placeholder:text-[#9C9087] font-sans resize-y",
+                    error && "border-[#E11D48] focus:border-[#E11D48] focus:ring-[#E11D48]/20"
                   )}
                 />
               )}
@@ -149,83 +146,89 @@ export default function DynamicForm({
               {/* Select */}
               {field.type === "select" && (
                 <select
-                  id={fieldId}
-                  value={(formData[field.name] as string) || ""}
+                  value={(value as string) || ""}
                   onChange={(e) => handleChange(field.name, e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-950/80 border border-white/10 rounded-xl text-sm text-gray-100 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all duration-200"
+                  className={cn(
+                    "w-full bg-white border border-[#D5CBC0] text-[#201515] rounded-xl px-4 py-3 text-sm focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20 focus:outline-none transition-all cursor-pointer",
+                    error && "border-[#E11D48]"
+                  )}
                 >
+                  <option value="" disabled>Select an option...</option>
                   {(field.options || []).map((opt) => (
-                    <option key={opt} value={opt} className="bg-gray-900 text-gray-100">
+                    <option key={opt} value={opt} className="bg-white text-[#201515]">
                       {opt}
                     </option>
                   ))}
                 </select>
               )}
 
-              {/* Boolean / Switch */}
+              {/* Number */}
+              {field.type === "number" && (
+                <input
+                  type="number"
+                  value={value !== undefined ? Number(value) : 0}
+                  onChange={(e) => handleChange(field.name, Number(e.target.value))}
+                  placeholder={field.placeholder}
+                  className={cn(
+                    "w-full bg-white border border-[#D5CBC0] text-[#201515] rounded-xl px-4 py-3 text-sm focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20 focus:outline-none transition-all placeholder:text-[#9C9087]",
+                    error && "border-[#E11D48]"
+                  )}
+                />
+              )}
+
+              {/* Boolean */}
               {field.type === "boolean" && (
-                <label className="flex items-center gap-3 cursor-pointer pt-1">
+                <label className="flex items-center gap-3 p-3 bg-[#FAF5EE] border border-[#EAE3D9] rounded-xl cursor-pointer hover:bg-[#F2ECE2] transition-colors">
                   <input
                     type="checkbox"
-                    checked={Boolean(formData[field.name])}
+                    checked={Boolean(value)}
                     onChange={(e) => handleChange(field.name, e.target.checked)}
-                    className="w-4 h-4 rounded border-gray-700 text-violet-600 focus:ring-violet-500/30 accent-violet-600"
+                    className="w-4 h-4 text-[#FF4F00] rounded border-[#D5CBC0] focus:ring-[#FF4F00]"
                   />
-                  <span className="text-sm text-gray-300">
-                    Enable {field.label || field.name}
+                  <span className="text-sm font-medium text-[#201515]">
+                    {field.placeholder || "Enable this setting"}
                   </span>
                 </label>
               )}
 
-              {isError && (
-                <p className="text-xs text-rose-400 flex items-center gap-1.5 mt-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {formErrors[field.name]}
-                </p>
-              )}
+              {error && <p className="text-xs text-[#E11D48] font-medium mt-1">{error}</p>}
             </div>
           );
         })}
       </div>
 
-      {/* Credit warning banner */}
-      <div className="rounded-xl p-4 bg-violet-950/30 border border-violet-500/20 flex items-center justify-between">
-        <div className="flex items-center gap-2.5 text-xs text-violet-200">
-          <Sparkles className="w-4 h-4 text-violet-400 shrink-0" />
-          <span>
-            This run costs <strong className="text-white font-semibold">{creditCost} credits</strong>. Your current balance: <strong className="text-white font-semibold">{userBalance}</strong>.
+      {/* Execution Action Footer */}
+      <div className="pt-4 border-t border-[#EAE3D9] flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2 text-xs text-[#5C524C]">
+          <span>Cost per run:</span>
+          <span className="inline-flex items-center gap-1 font-bold text-[#D43F00] bg-[#FFF2EB] border border-[#FFD6C2] px-2.5 py-0.5 rounded-full">
+            <Zap className="w-3 h-3 text-[#FF4F00] fill-[#FF4F00]" />
+            {creditCost} credit{creditCost !== 1 ? "s" : ""}
           </span>
+          <span className="text-[#887E78]">(Balance: {userBalance})</span>
         </div>
-        {!hasEnoughCredits && (
-          <span className="text-xs font-semibold text-rose-400">
-            Insufficient credits
-          </span>
-        )}
-      </div>
 
-      {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={isLoading || !hasEnoughCredits}
-        className={cn(
-          "relative w-full py-3.5 px-6 rounded-xl font-semibold text-sm text-white shadow-lg transition-all duration-300 flex items-center justify-center gap-2.5 overflow-hidden group cursor-pointer",
-          !hasEnoughCredits
-            ? "bg-gray-800 text-gray-500 cursor-not-allowed border border-white/5"
-            : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 shadow-violet-600/30 hover:shadow-violet-600/50 hover:scale-[1.01] active:scale-[0.99]"
-        )}
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin text-white" />
-            <span>Executing Agent Job…</span>
-          </>
-        ) : (
-          <>
-            <Sparkles className="w-4 h-4 text-violet-200 group-hover:rotate-12 transition-transform" />
-            <span>Run Agent ({creditCost} Credits)</span>
-          </>
-        )}
-      </button>
+        <button
+          type="submit"
+          disabled={!hasEnoughCredits || isLoading}
+          className={cn(
+            "btn-zap-primary w-full sm:w-auto",
+            (!hasEnoughCredits || isLoading) && "opacity-50 cursor-not-allowed hover:transform-none hover:shadow-none"
+          )}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Queuing Job…</span>
+            </>
+          ) : (
+            <>
+              <span>Execute Agent</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
+        </button>
+      </div>
     </form>
   );
 }

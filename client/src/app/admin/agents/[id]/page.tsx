@@ -10,14 +10,11 @@ import {
   Sparkles,
   Zap,
   Sliders,
-  CheckCircle2,
   Loader2,
-  Bot,
   AlertTriangle,
 } from "lucide-react";
-import CardSpotlight from "@/components/CardSpotlight";
 import BackgroundBeams from "@/components/BackgroundBeams";
-import { fetchAgent, updateAdminAgent, SchemaField, Agent } from "@/lib/api";
+import { fetchAgent, updateAdminAgent, SchemaField } from "@/lib/api";
 
 export default function EditAgentPage() {
   const params = useParams();
@@ -68,13 +65,16 @@ export default function EditAgentPage() {
 
     const newField: SchemaField = {
       name: cleanName,
-      label: newFieldLabel.trim() || newFieldName,
+      label: newFieldLabel.trim() || newFieldName.trim(),
       type: newFieldType,
       required: newFieldRequired,
-      placeholder: newFieldPlaceholder || undefined,
+      placeholder: newFieldPlaceholder.trim() || undefined,
       options:
-        newFieldType === "select"
-          ? newFieldOptions.split(",").map((s) => s.trim()).filter(Boolean)
+        newFieldType === "select" && newFieldOptions.trim()
+          ? newFieldOptions
+              .split(",")
+              .map((o) => o.trim())
+              .filter(Boolean)
           : undefined,
     };
 
@@ -93,7 +93,10 @@ export default function EditAgentPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return alert("Agent name is required.");
+    if (!name.trim() || !description.trim()) {
+      alert("Please fill in Agent Name and Description.");
+      return;
+    }
 
     setSaving(true);
     try {
@@ -101,26 +104,27 @@ export default function EditAgentPage() {
         name,
         description,
         systemPrompt,
-        creditCost,
+        creditCost: Number(creditCost),
         category,
         isActive,
-        inputSchema: { fields },
+        inputSchema: {
+          fields,
+        },
       });
       router.push("/admin");
     } catch (err) {
-      alert("Failed to update agent");
-    } finally {
+      alert(err instanceof Error ? err.message : "Failed to update agent");
       setSaving(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-8">
+      <div className="relative min-h-[calc(100vh-4.5rem)] flex items-center justify-center p-8 bg-[#FFFDF9]">
         <BackgroundBeams />
         <div className="text-center space-y-3 z-10">
-          <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-gray-400">Loading Agent Definition…</p>
+          <div className="w-10 h-10 border-4 border-[#EAE3D9] border-t-[#FF4F00] rounded-full animate-spin mx-auto" />
+          <p className="text-sm font-semibold text-[#5C524C]">Loading Agent Data…</p>
         </div>
       </div>
     );
@@ -128,18 +132,15 @@ export default function EditAgentPage() {
 
   if (error) {
     return (
-      <div className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center p-8">
+      <div className="relative min-h-[calc(100vh-4.5rem)] flex items-center justify-center p-8 bg-[#FFFDF9]">
         <BackgroundBeams />
-        <div className="text-center space-y-4 max-w-md z-10">
-          <AlertTriangle className="w-10 h-10 text-rose-400 mx-auto" />
-          <h2 className="text-xl font-bold text-white">Agent Not Found</h2>
-          <p className="text-xs text-gray-400">{error}</p>
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20"
-          >
+        <div className="text-center space-y-4 max-w-md z-10 bg-white border border-[#EAE3D9] p-8 rounded-3xl shadow-sm">
+          <AlertTriangle className="w-10 h-10 text-[#E11D48] mx-auto" />
+          <h2 className="font-heading text-xl font-bold text-[#201515]">Agent Not Found</h2>
+          <p className="text-xs text-[#5C524C]">{error}</p>
+          <Link href="/admin" className="btn-zap-secondary inline-flex text-xs px-4 py-2">
             <ArrowLeft className="w-4 h-4" />
-            <span>Return to Admin Studio</span>
+            <span>Return to Admin Console</span>
           </Link>
         </div>
       </div>
@@ -147,58 +148,58 @@ export default function EditAgentPage() {
   }
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-8">
+    <div className="relative min-h-[calc(100vh-4.5rem)] p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full space-y-8 bg-[#FFFDF9]">
       <BackgroundBeams />
 
-      <div className="relative z-10 flex items-center justify-between">
+      <div className="relative z-10">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5C524C] hover:text-[#201515] transition-colors bg-white border border-[#EAE3D9] px-3.5 py-1.5 rounded-full shadow-xs"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Admin Studio</span>
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Governance</span>
         </Link>
       </div>
 
       <div className="relative z-10 space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20">
-          <Bot className="w-3.5 h-3.5" />
-          <span>Edit Agent Definition</span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FFF2EB] text-[#D43F00] border border-[#FFD6C2]">
+          <span className="text-[#FF4F00] font-black">_</span>
+          <span>Agent Publishing Studio</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-          Modify {name}
+        <h1 className="font-heading text-2xl sm:text-3xl font-extrabold text-[#201515] tracking-tight">
+          Edit Agent: {name}
         </h1>
-        <p className="text-xs sm:text-sm text-gray-400">
-          Update instructions, credit parameters, and runtime input schema.
+        <p className="text-sm text-[#5C524C]">
+          Update parameters, system prompt, or schema fields.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
         {/* Core Metadata */}
-        <CardSpotlight className="p-8 space-y-6">
-          <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-violet-400" />
+        <div className="bg-white border border-[#EAE3D9] rounded-3xl p-8 space-y-6 shadow-sm">
+          <h2 className="font-heading text-base font-bold text-[#201515] tracking-tight flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#FF4F00]" />
             <span>Agent Specification</span>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-300">Agent Name *</label>
+              <label className="text-xs font-bold text-[#201515]">Agent Name *</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 bg-gray-950/70 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-violet-500"
+                className="w-full px-4 py-2.5 bg-white border border-[#D5CBC0] rounded-xl text-sm text-[#201515] outline-none focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-300">Category</label>
+              <label className="text-xs font-bold text-[#201515]">Category</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-950/70 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-violet-500"
+                className="w-full px-4 py-2.5 bg-white border border-[#D5CBC0] rounded-xl text-sm text-[#201515] outline-none focus:border-[#FF4F00] cursor-pointer"
               >
                 <option value="Developer">Developer</option>
                 <option value="Data">Data & Database</option>
@@ -210,30 +211,30 @@ export default function EditAgentPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300">Description *</label>
+            <label className="text-xs font-bold text-[#201515]">Description *</label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
-              className="w-full px-4 py-2.5 bg-gray-950/70 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-violet-500"
+              className="w-full px-4 py-2.5 bg-white border border-[#D5CBC0] rounded-xl text-sm text-[#201515] outline-none focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-gray-300">System Instruction Prompt</label>
+            <label className="text-xs font-bold text-[#201515]">System Instruction Prompt</label>
             <textarea
               rows={4}
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-950/70 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-violet-500 resize-y"
+              className="w-full px-4 py-2.5 bg-white border border-[#D5CBC0] rounded-xl text-sm text-[#201515] outline-none focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20 resize-y font-sans"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-gray-300 flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+              <label className="text-xs font-bold text-[#201515] flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-[#FF4F00] fill-[#FF4F00]" />
                 <span>Credit Cost Per Execution</span>
               </label>
               <input
@@ -241,43 +242,45 @@ export default function EditAgentPage() {
                 min={1}
                 max={50}
                 value={creditCost}
-                onChange={(e) => setCreditCost(parseInt(e.target.value) || 1)}
-                className="w-full px-4 py-2.5 bg-gray-950/70 border border-white/10 rounded-xl text-sm text-white outline-none focus:border-violet-500"
+                onChange={(e) => setCreditCost(Number(e.target.value))}
+                className="w-full px-4 py-2.5 bg-white border border-[#D5CBC0] rounded-xl text-sm text-[#201515] outline-none focus:border-[#FF4F00]"
               />
             </div>
 
-            <div className="flex items-center gap-3 pt-6">
-              <input
-                type="checkbox"
-                id="is-active"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 rounded text-violet-600 accent-violet-600"
-              />
-              <label htmlFor="is-active" className="text-xs font-semibold text-gray-300 cursor-pointer">
-                Agent is Active in Marketplace
-              </label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-[#201515]">Visibility</label>
+              <div className="flex items-center gap-3 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-[#201515]">
+                  <input
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    className="w-4 h-4 text-[#FF4F00] rounded"
+                  />
+                  <span>Active in Public Catalog</span>
+                </label>
+              </div>
             </div>
           </div>
-        </CardSpotlight>
+        </div>
 
-        {/* Dynamic Schema Builder */}
-        <CardSpotlight className="p-8 space-y-6">
-          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+        {/* Dynamic Schema Fields */}
+        <div className="bg-white border border-[#EAE3D9] rounded-3xl p-8 space-y-6 shadow-sm">
+          <div className="flex items-center justify-between pb-4 border-b border-[#EAE3D9]">
             <div>
-              <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-cyan-400" />
-                <span>Input Schema Builder</span>
+              <h2 className="font-heading text-base font-bold text-[#201515] flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-[#FF4F00]" />
+                <span>Input Schema Fields ({fields.length})</span>
               </h2>
-              <p className="text-xs text-gray-400 mt-0.5">
-                Configure parameter inputs accepted by this agent.
+              <p className="text-xs text-[#5C524C] mt-0.5">
+                Defines the inputs the user supplies before executing this agent.
               </p>
             </div>
 
             <button
               type="button"
               onClick={() => setShowAddField(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-violet-300 bg-violet-600/20 hover:bg-violet-600 hover:text-white border border-violet-500/30 transition-all cursor-pointer"
+              className="btn-zap-secondary text-xs px-3.5 py-1.5 inline-flex"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Field</span>
@@ -285,39 +288,29 @@ export default function EditAgentPage() {
           </div>
 
           <div className="space-y-3">
-            {fields.map((f, index) => (
+            {fields.map((field, idx) => (
               <div
-                key={f.name + index}
-                className="p-4 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between gap-4"
+                key={idx}
+                className="flex items-center justify-between p-4 bg-[#FAF5EE] border border-[#EAE3D9] rounded-2xl text-xs"
               >
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-white text-xs">{f.label || f.name}</span>
-                    <span className="font-mono text-[11px] text-gray-500">({f.name})</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 uppercase">
-                      {f.type}
-                    </span>
-                    {f.required && (
-                      <span className="text-[10px] text-amber-400 font-semibold">
+                  <div className="flex items-center gap-2 font-bold text-[#201515]">
+                    <span>{field.label}</span>
+                    <span className="font-mono text-[10px] text-[#887E78]">({field.name})</span>
+                    {field.required && (
+                      <span className="text-[10px] bg-[#FFF2EB] text-[#D43F00] px-2 py-0.5 rounded-full font-bold">
                         Required
                       </span>
                     )}
                   </div>
-                  {f.placeholder && (
-                    <p className="text-[11px] text-gray-400">Placeholder: &quot;{f.placeholder}&quot;</p>
-                  )}
-                  {f.options && (
-                    <p className="text-[11px] text-gray-400 font-mono">
-                      Options: [{f.options.join(", ")}]
-                    </p>
-                  )}
+                  <p className="text-[11px] text-[#5C524C]">Type: {field.type}</p>
                 </div>
 
                 <button
                   type="button"
-                  onClick={() => handleRemoveField(index)}
-                  className="p-1.5 text-gray-500 hover:text-rose-400 transition-colors cursor-pointer"
-                  title="Remove Field"
+                  onClick={() => handleRemoveField(idx)}
+                  className="p-1.5 text-[#E11D48] hover:bg-[#FFF1F2] rounded-lg transition-colors cursor-pointer"
+                  title="Remove field"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -325,86 +318,98 @@ export default function EditAgentPage() {
             ))}
           </div>
 
+          {/* New field drawer / mini modal */}
           {showAddField && (
-            <div className="p-5 rounded-2xl bg-gray-950/80 border border-violet-500/30 space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-violet-300">
-                New Input Parameter
+            <div className="p-5 border border-[#FFD6C2] bg-[#FFF2EB]/50 rounded-2xl space-y-4">
+              <h3 className="font-heading text-xs font-bold text-[#201515] uppercase tracking-wider">
+                Configure New Schema Field
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-gray-400">Field Key *</label>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label className="block font-bold text-[#201515] mb-1">Variable Name *</label>
                   <input
                     type="text"
                     value={newFieldName}
                     onChange={(e) => setNewFieldName(e.target.value)}
-                    placeholder="e.g. max_tokens"
-                    className="w-full px-3 py-2 bg-gray-900 border border-white/10 rounded-lg text-xs text-white outline-none"
+                    placeholder="e.g. source_code"
+                    className="w-full px-3 py-2 bg-white border border-[#D5CBC0] rounded-xl text-xs outline-none"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-gray-400">Display Label</label>
+                <div>
+                  <label className="block font-bold text-[#201515] mb-1">Display Label</label>
                   <input
                     type="text"
                     value={newFieldLabel}
                     onChange={(e) => setNewFieldLabel(e.target.value)}
-                    placeholder="e.g. Max Output Tokens"
-                    className="w-full px-3 py-2 bg-gray-900 border border-white/10 rounded-lg text-xs text-white outline-none"
+                    placeholder="e.g. Source Code"
+                    className="w-full px-3 py-2 bg-white border border-[#D5CBC0] rounded-xl text-xs outline-none"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-gray-400">Type</label>
+                <div>
+                  <label className="block font-bold text-[#201515] mb-1">Type</label>
                   <select
                     value={newFieldType}
                     onChange={(e) => setNewFieldType(e.target.value as SchemaField["type"])}
-                    className="w-full px-3 py-2 bg-gray-900 border border-white/10 rounded-lg text-xs text-white outline-none"
+                    className="w-full px-3 py-2 bg-white border border-[#D5CBC0] rounded-xl text-xs outline-none cursor-pointer"
                   >
-                    <option value="text">Single-line Text</option>
-                    <option value="textarea">Multi-line Textarea</option>
+                    <option value="text">Text (Short input)</option>
+                    <option value="textarea">Textarea (Long multiline)</option>
+                    <option value="select">Select (Dropdown options)</option>
                     <option value="number">Number</option>
-                    <option value="select">Dropdown Select</option>
-                    <option value="boolean">Boolean Checkbox</option>
+                    <option value="boolean">Boolean (Checkbox toggle)</option>
                   </select>
+                </div>
+                <div>
+                  <label className="block font-bold text-[#201515] mb-1">Placeholder</label>
+                  <input
+                    type="text"
+                    value={newFieldPlaceholder}
+                    onChange={(e) => setNewFieldPlaceholder(e.target.value)}
+                    placeholder="e.g. Paste here..."
+                    className="w-full px-3 py-2 bg-white border border-[#D5CBC0] rounded-xl text-xs outline-none"
+                  />
                 </div>
               </div>
 
               {newFieldType === "select" && (
-                <div className="space-y-1">
-                  <label className="text-[11px] font-semibold text-gray-400">
-                    Dropdown Options (comma separated)
+                <div>
+                  <label className="block text-xs font-bold text-[#201515] mb-1">
+                    Select Options (comma-separated)
                   </label>
                   <input
                     type="text"
                     value={newFieldOptions}
                     onChange={(e) => setNewFieldOptions(e.target.value)}
-                    placeholder="Option A, Option B"
-                    className="w-full px-3 py-2 bg-gray-900 border border-white/10 rounded-lg text-xs text-white outline-none"
+                    placeholder="Option 1, Option 2, Option 3"
+                    className="w-full px-3 py-2 bg-white border border-[#D5CBC0] rounded-xl text-xs outline-none"
                   />
                 </div>
               )}
 
               <div className="flex items-center justify-between pt-2">
-                <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-300">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-[#201515]">
                   <input
                     type="checkbox"
                     checked={newFieldRequired}
                     onChange={(e) => setNewFieldRequired(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded text-violet-600 accent-violet-600"
+                    className="w-4 h-4 text-[#FF4F00] rounded"
                   />
                   <span>Mark as Required</span>
                 </label>
 
-                <div className="flex items-center gap-2">
+                <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setShowAddField(false)}
-                    className="px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-white"
+                    className="btn-zap-secondary text-xs px-3 py-1.5"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleAddField}
-                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white shadow-md shadow-violet-600/30"
+                    className="btn-zap-primary text-xs px-4 py-1.5"
                   >
                     Save Field
                   </button>
@@ -412,30 +417,28 @@ export default function EditAgentPage() {
               </div>
             </div>
           )}
-        </CardSpotlight>
+        </div>
 
-        <div className="flex items-center justify-end gap-4">
+        {/* Submit */}
+        <div className="flex justify-end gap-3 pt-4">
           <Link
             href="/admin"
-            className="px-5 py-2.5 rounded-xl text-xs font-medium text-gray-400 hover:text-white transition-colors"
+            className="btn-zap-secondary text-xs px-5 py-2.5"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 shadow-lg shadow-violet-600/30 flex items-center gap-2 cursor-pointer"
+            className="btn-zap-primary text-xs px-6 py-2.5 font-bold"
           >
             {saving ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Updating Agent…</span>
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                <span>Saving Changes…</span>
               </>
             ) : (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Save Changes</span>
-              </>
+              <span>Save Changes</span>
             )}
           </button>
         </div>

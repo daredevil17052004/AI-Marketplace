@@ -42,39 +42,39 @@ export default function JsonViewer({
   };
 
   return (
-    <div className={cn("rounded-xl border border-white/10 bg-gray-950/80 overflow-hidden font-mono text-xs", className)}>
-      <div className="flex items-center justify-between px-4 py-2.5 bg-gray-900/60 border-b border-white/5">
+    <div className={cn("rounded-2xl border border-[#EAE3D9] bg-[#FAF5EE] overflow-hidden font-mono text-xs", className)}>
+      <div className="flex items-center justify-between px-4 py-2.5 bg-white border-b border-[#EAE3D9]">
         <button
           type="button"
           onClick={() => setCollapsed(!collapsed)}
-          className="flex items-center gap-2 text-gray-300 hover:text-white font-medium transition-colors cursor-pointer"
+          className="flex items-center gap-2 text-[#5C524C] hover:text-[#201515] font-semibold transition-colors cursor-pointer"
         >
-          {collapsed ? <ChevronRight className="w-3.5 h-3.5 text-gray-400" /> : <ChevronDown className="w-3.5 h-3.5 text-gray-400" />}
+          {collapsed ? <ChevronRight className="w-3.5 h-3.5 text-[#887E78]" /> : <ChevronDown className="w-3.5 h-3.5 text-[#887E78]" />}
           <span>{title}</span>
         </button>
 
         <button
           type="button"
           onClick={handleCopy}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] bg-[#FAF5EE] hover:bg-[#F2ECE2] text-[#5C524C] hover:text-[#201515] transition-all cursor-pointer border border-[#EAE3D9]"
           title="Copy JSON"
         >
           {copied ? (
             <>
-              <Check className="w-3 h-3 text-emerald-400" />
-              <span className="text-emerald-400">Copied</span>
+              <Check className="w-3 h-3 text-[#059669]" />
+              <span className="text-[#059669] font-bold">Copied</span>
             </>
           ) : (
             <>
-              <Copy className="w-3 h-3 text-gray-400" />
-              <span>Copy</span>
+              <Copy className="w-3 h-3 text-[#887E78]" />
+              <span className="font-medium">Copy</span>
             </>
           )}
         </button>
       </div>
 
       {!collapsed && (
-        <pre className="p-4 overflow-x-auto text-gray-200 leading-relaxed max-h-96">
+        <pre className="p-4 overflow-x-auto text-[#201515] leading-relaxed max-h-96">
           <code>{jsonString}</code>
         </pre>
       )}

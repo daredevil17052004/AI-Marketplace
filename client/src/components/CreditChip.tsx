@@ -13,14 +13,14 @@ export default function CreditChip({ className }: { className?: string }) {
     <Link
       href="/credits"
       className={cn(
-        "group inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-violet-950/40 border border-violet-500/30 text-violet-200 hover:border-violet-400 hover:bg-violet-900/50 transition-all shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)]",
+        "group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#FFF2EB] border border-[#FFD6C2] text-[#D43F00] hover:bg-[#FFE6D9] hover:border-[#FFB38A] transition-all shadow-sm",
         className
       )}
       title="View and manage credits"
     >
-      <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400 group-hover:scale-110 transition-transform" />
-      <span>{balance}</span>
-      <span className="text-violet-400 text-[11px] font-normal">credits</span>
+      <Zap className="w-3.5 h-3.5 text-[#FF4F00] fill-[#FF4F00] group-hover:scale-110 transition-transform" />
+      <span className="font-bold">{balance}</span>
+      <span className="text-[#9C5A3E] text-[11px] font-normal">credits</span>
     </Link>
   );
 }

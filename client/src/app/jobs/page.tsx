@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Layers,
   ArrowRight,
@@ -11,7 +12,6 @@ import {
   Clock,
   Sparkles,
 } from "lucide-react";
-import CardSpotlight from "@/components/CardSpotlight";
 import StatusBadge from "@/components/StatusBadge";
 import BackgroundBeams from "@/components/BackgroundBeams";
 import { fetchJobs, Job } from "@/lib/api";
@@ -59,163 +59,173 @@ export default function JobsHistoryPage() {
   const statuses = ["All", "Pending", "Processing", "Completed", "Failed"];
 
   const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
+    return jobs.filter((j) => {
       const matchesStatus =
         selectedStatus === "All" ||
-        job.status.toLowerCase() === selectedStatus.toLowerCase();
+        j.status.toLowerCase() === selectedStatus.toLowerCase();
 
+      const q = search.toLowerCase();
       const matchesSearch =
-        job.id.toLowerCase().includes(search.toLowerCase()) ||
-        (job.agentName && job.agentName.toLowerCase().includes(search.toLowerCase())) ||
-        job.agentId.toLowerCase().includes(search.toLowerCase());
+        j.id.toLowerCase().includes(q) ||
+        (j.agentName && j.agentName.toLowerCase().includes(q)) ||
+        j.agentId.toLowerCase().includes(q);
 
       return matchesStatus && matchesSearch;
     });
   }, [jobs, selectedStatus, search]);
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+    <div className="relative min-h-[calc(100vh-4.5rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8 bg-[#FFFDF9]">
       <BackgroundBeams />
 
       {/* Header */}
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.08]">
-        <div>
-          <span className="text-xs font-semibold uppercase tracking-widest text-violet-400">
-            Autonomous Workflows
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">
-            Job History & Outputs
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-400">
-            Real-time execution log. Inspect input payloads, response statuses, and structured output.
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#EAE3D9]">
+        <div className="space-y-1">
+          <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-[#FFF2EB] text-[#D43F00] border border-[#FFD6C2]">
+            <span className="text-[#FF4F00] font-black">_</span>
+            <span>Execution Audit Trail</span>
+          </div>
+          <motion.h1
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="font-heading text-2xl sm:text-3xl font-extrabold text-[#201515] tracking-tight"
+          >
+            Job History & Runs
+          </motion.h1>
+          <p className="text-sm text-[#5C524C]">
+            Real-time feed of all asynchronous agent executions processed by BullMQ.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => loadJobs()}
-            disabled={isRefreshing}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-gray-300 bg-white/5 hover:bg-white/10 border border-white/10 transition-all cursor-pointer"
-          >
-            <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin text-violet-400")} />
-            <span>Refresh</span>
-          </button>
-          <Link
-            href="/agents"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500 shadow-md shadow-violet-600/25 transition-all"
-          >
-            <Bot className="w-4 h-4" />
-            <span>Launch New Job</span>
-          </Link>
-        </div>
+        <button
+          type="button"
+          onClick={() => loadJobs(false)}
+          disabled={isRefreshing}
+          className="btn-zap-secondary text-xs px-4 py-2 self-start sm:self-auto cursor-pointer"
+        >
+          <RefreshCw className={cn("w-3.5 h-3.5", isRefreshing && "animate-spin text-[#FF4F00]")} />
+          <span>Refresh Runs</span>
+        </button>
       </div>
 
-      {/* Search and Status Filters */}
-      <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-        {/* Status Tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto p-1 bg-white/[0.03] border border-white/5 rounded-2xl">
-          {statuses.map((st) => (
-            <button
-              key={st}
-              type="button"
-              onClick={() => setSelectedStatus(st)}
-              className={cn(
-                "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap cursor-pointer",
-                selectedStatus === st
-                  ? "bg-violet-600 text-white shadow-md shadow-violet-600/30"
-                  : "text-gray-400 hover:text-white"
-              )}
-            >
-              {st}
-            </button>
-          ))}
-        </div>
-
+      {/* Filters and Search Bar */}
+      <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4">
         {/* Search */}
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+        <div className="relative w-full sm:flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#887E78]" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search Job ID or Agent…"
-            className="w-full pl-9 pr-3 py-2 bg-gray-950/70 border border-white/10 rounded-xl text-xs text-white placeholder-gray-500 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500/20 transition-all"
+            placeholder="Search by job ID or agent name..."
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#D5CBC0] rounded-full text-sm text-[#201515] placeholder-[#9C9087] outline-none focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20 transition-all shadow-xs"
           />
+        </div>
+
+        {/* Status Pills with animated spring pill */}
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
+          {statuses.map((s) => {
+            const isSelected = selectedStatus === s;
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSelectedStatus(s)}
+                className={cn(
+                  "relative px-3.5 py-1.5 rounded-full text-xs font-bold transition-colors whitespace-nowrap cursor-pointer z-10",
+                  isSelected
+                    ? "text-[#FFFDF9]"
+                    : "text-[#5C524C] hover:text-[#201515]"
+                )}
+              >
+                {isSelected && (
+                  <motion.div
+                    layoutId="jobStatusPill"
+                    className="absolute inset-0 bg-[#201515] rounded-full z-[-1] shadow-xs"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+                {!isSelected && (
+                  <div className="absolute inset-0 bg-white border border-[#EAE3D9] rounded-full z-[-2]" />
+                )}
+                {s}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Jobs Table */}
+      {/* Jobs Feed / Table */}
       <div className="relative z-10">
-        <CardSpotlight className="p-0 overflow-hidden">
-          {loading ? (
-            <div className="p-12 text-center text-xs text-gray-400">Loading jobs…</div>
-          ) : filteredJobs.length === 0 ? (
-            <div className="p-16 text-center space-y-4">
-              <Layers className="w-10 h-10 text-gray-600 mx-auto" />
-              <h3 className="text-base font-bold text-white">No jobs found</h3>
-              <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                No execution tasks match the selected status filter or search parameters.
-              </p>
-              <Link
-                href="/agents"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-violet-600 hover:bg-violet-500"
+        {loading ? (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-20 bg-white border border-[#EAE3D9] rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        ) : filteredJobs.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white border border-[#EAE3D9] rounded-3xl p-16 text-center space-y-4 shadow-xs"
+          >
+            <Layers className="w-10 h-10 text-[#887E78] mx-auto" />
+            <h3 className="font-heading text-lg font-bold text-[#201515]">No execution runs found</h3>
+            <p className="text-xs text-[#5C524C] max-w-sm mx-auto">
+              Run your first agent from the marketplace to see live execution telemetry here.
+            </p>
+            <Link
+              href="/agents"
+              className="btn-zap-primary text-xs px-5 py-2.5 inline-flex"
+            >
+              <span>Explore Marketplace</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </motion.div>
+        ) : (
+          <div className="bg-white border border-[#EAE3D9] rounded-3xl overflow-hidden shadow-xs divide-y divide-[#EAE3D9]">
+            {filteredJobs.map((j, idx) => (
+              <motion.div
+                key={j.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.04 }}
               >
-                Trigger an Agent
-              </Link>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-white/5 bg-white/[0.02] text-gray-400">
-                    <th className="px-6 py-3.5 font-semibold">Job ID</th>
-                    <th className="px-6 py-3.5 font-semibold">Agent</th>
-                    <th className="px-6 py-3.5 font-semibold">Status</th>
-                    <th className="px-6 py-3.5 font-semibold">Duration</th>
-                    <th className="px-6 py-3.5 font-semibold">Created At</th>
-                    <th className="px-6 py-3.5 font-semibold text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5 text-gray-300">
-                  {filteredJobs.map((job) => (
-                    <tr key={job.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="px-6 py-4 font-mono font-medium text-gray-300">
-                        {job.id}
-                      </td>
-                      <td className="px-6 py-4 font-semibold text-white">
-                        <Link
-                          href={`/agents/${job.agentId}`}
-                          className="hover:text-violet-400 transition-colors"
-                        >
-                          {job.agentName || job.agentId}
-                        </Link>
-                      </td>
-                      <td className="px-6 py-4">
-                        <StatusBadge status={job.status} />
-                      </td>
-                      <td className="px-6 py-4 font-mono text-gray-400">
-                        {job.durationMs ? `${job.durationMs}ms` : "—"}
-                      </td>
-                      <td className="px-6 py-4 text-gray-400">
-                        {formatDate(job.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <Link
-                          href={`/jobs/${job.id}`}
-                          className="inline-flex items-center gap-1.5 text-xs font-medium text-violet-400 hover:text-white px-3 py-1.5 rounded-lg bg-white/5 hover:bg-violet-600 transition-all"
-                        >
-                          <span>Inspect</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardSpotlight>
+                <Link
+                  href={`/jobs/${j.id}`}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-5 hover:bg-[#FAF5EE] transition-colors gap-4 group"
+                >
+                  <div className="flex items-start sm:items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-[#FFF2EB] border border-[#FFD6C2] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                      <Bot className="w-5 h-5 text-[#FF4F00]" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-heading font-bold text-sm text-[#201515] group-hover:text-[#FF4F00] transition-colors">
+                          {j.agentName || "Agent Run"}
+                        </span>
+                        <span className="text-xs font-mono text-[#887E78]">
+                          #{j.id.slice(0, 8)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-[#887E78]">
+                        <span>{formatDate(j.createdAt)}</span>
+                        {j.durationMs && (
+                          <span>• {j.durationMs}ms</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 self-end sm:self-auto">
+                    <StatusBadge status={j.status} />
+                    <ArrowRight className="w-4 h-4 text-[#887E78] group-hover:text-[#FF4F00] group-hover:translate-x-1 transition-all" />
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

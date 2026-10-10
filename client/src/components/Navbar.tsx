@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Sparkles, Bot, Layers, Zap, LayoutDashboard, Shield, LogOut, Menu, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { Bot, Layers, Zap, LayoutDashboard, Shield, LogOut, Menu, X, ArrowRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import CreditChip from "@/components/CreditChip";
 import { cn } from "@/lib/utils";
@@ -25,25 +26,24 @@ export default function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-gray-950/75 border-b border-white/[0.08] transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand */}
+    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-[#FFFDF9]/90 border-b border-[#EAE3D9] transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+        {/* Zapier-style Brand with signature orange foundation bar */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-violet-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-violet-600/30 group-hover:scale-105 transition-transform">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-white text-base tracking-tight group-hover:text-violet-300 transition-colors">
-              AI Marketplace
-            </span>
-            <span className="text-[10px] text-violet-400 font-mono -mt-1 tracking-wider uppercase">
-              Autonomous
+          <div className="flex items-center">
+            {/* The exact Zapier foundation block */}
+            <span className="w-5 h-1.5 bg-[#ff4f00] rounded-[1px] mr-1.5 self-end mb-1.5 group-hover:scale-x-110 transition-transform origin-left" />
+            <span className="font-display font-medium text-[#201515] text-2xl tracking-tight">
+              agent<span className="text-[#ff4f00]">flow</span>
             </span>
           </div>
+          <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#fff2eb] text-[#ff4f00] border border-[#ffd6c2] rounded-full">
+            Autonomous
+          </span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1 bg-white/[0.03] border border-white/[0.07] px-3 py-1.5 rounded-full">
+        {/* Desktop Navigation with Aceternity animated indicator pill */}
+        <nav className="hidden md:flex items-center gap-1 bg-[#FAF5EE] border border-[#EAE3D9] p-1 rounded-full shadow-xs relative">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
@@ -52,13 +52,20 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200",
+                  "relative flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors duration-200 z-10",
                   isActive
-                    ? "bg-violet-600/20 text-violet-300 border border-violet-500/30 shadow-[0_0_12px_-2px_rgba(139,92,246,0.3)]"
-                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                    ? "text-[#FFFDF9]"
+                    : "text-[#5C524C] hover:text-[#201515]"
                 )}
               >
-                <Icon className="w-3.5 h-3.5" />
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavPill"
+                    className="absolute inset-0 bg-[#201515] rounded-full z-[-1] shadow-xs"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+                <Icon className={cn("w-3.5 h-3.5", isActive ? "text-[#FF4F00]" : "text-[#887E78]")} />
                 <span>{link.label}</span>
               </Link>
             );
@@ -70,14 +77,14 @@ export default function Navbar() {
           <CreditChip />
 
           {user ? (
-            <div className="flex items-center gap-2.5 pl-2 border-l border-white/10">
-              <span className="text-xs text-gray-400 max-w-[130px] truncate" title={user.email}>
+            <div className="flex items-center gap-2.5 pl-2 border-l border-[#EAE3D9]">
+              <span className="text-xs font-medium text-[#5C524C] max-w-[130px] truncate" title={user.email}>
                 {user.email}
               </span>
               <button
                 type="button"
                 onClick={() => logout()}
-                className="p-1.5 text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 text-[#887E78] hover:text-[#BE123C] hover:bg-[#FFF1F2] rounded-full transition-colors cursor-pointer"
                 title="Log out"
               >
                 <LogOut className="w-4 h-4" />
@@ -87,15 +94,16 @@ export default function Navbar() {
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="text-xs font-medium text-gray-300 hover:text-white px-3 py-2 rounded-lg transition-colors"
+                className="text-xs font-semibold text-[#5C524C] hover:text-[#201515] px-3.5 py-2 rounded-full hover:bg-[#FAF5EE] transition-colors"
               >
-                Sign in
+                Log in
               </Link>
               <Link
                 href="/register"
-                className="text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-xl transition-all shadow-md shadow-violet-600/20 hover:shadow-violet-600/40"
+                className="btn-zap-primary text-xs py-2 px-4 font-semibold"
               >
-                Get Started
+                <span>Get Started Free</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           )}
@@ -105,7 +113,7 @@ export default function Navbar() {
         <button
           type="button"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 text-gray-400 hover:text-white rounded-lg focus:outline-none"
+          className="md:hidden p-2 text-[#5C524C] hover:text-[#201515] rounded-xl hover:bg-[#FAF5EE] focus:outline-none"
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
@@ -113,7 +121,7 @@ export default function Navbar() {
 
       {/* Mobile menu drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden px-4 pt-2 pb-6 space-y-2 bg-gray-950/95 border-b border-white/10 backdrop-blur-2xl">
+        <div className="md:hidden px-4 pt-3 pb-6 space-y-2 bg-[#FFFDF9] border-b border-[#EAE3D9] shadow-lg">
           <div className="py-2">
             <CreditChip />
           </div>
@@ -126,19 +134,19 @@ export default function Navbar() {
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium",
+                  "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold",
                   isActive
-                    ? "bg-violet-600/20 text-violet-300 border border-violet-500/30"
-                    : "text-gray-300 hover:text-white hover:bg-white/5"
+                    ? "bg-[#201515] text-[#FFFDF9]"
+                    : "text-[#5C524C] hover:text-[#201515] hover:bg-[#FAF5EE]"
                 )}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className={cn("w-4 h-4", isActive ? "text-[#FF4F00]" : "text-[#887E78]")} />
                 <span>{link.label}</span>
               </Link>
             );
           })}
 
-          <div className="pt-4 border-t border-white/10 flex flex-col gap-2">
+          <div className="pt-4 border-t border-[#EAE3D9] flex flex-col gap-2">
             {user ? (
               <button
                 type="button"
@@ -146,7 +154,7 @@ export default function Navbar() {
                   logout();
                   setMobileMenuOpen(false);
                 }}
-                className="flex items-center gap-2 text-rose-400 text-sm px-3 py-2"
+                className="flex items-center gap-2 text-[#BE123C] text-sm px-3.5 py-2 hover:bg-[#FFF1F2] rounded-xl font-medium"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Logout ({user.email})</span>
@@ -156,16 +164,16 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm text-gray-300 px-3 py-2"
+                  className="text-sm font-semibold text-[#5C524C] px-3.5 py-2 hover:bg-[#FAF5EE] rounded-xl"
                 >
-                  Sign in
+                  Log in
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-center text-sm font-semibold bg-violet-600 text-white px-4 py-2.5 rounded-xl"
+                  className="btn-zap-primary text-center text-sm py-2.5 rounded-full"
                 >
-                  Get Started
+                  Get Started Free
                 </Link>
               </>
             )}

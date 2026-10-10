@@ -1,49 +1,185 @@
 @import "tailwindcss";
 
+/* ─── Zapier Official Font Faces ───────────────────────────────────────────── */
+@font-face {
+  font-family: "DegularDisplay";
+  src: url("https://marketing-site.vercel.zapier.com/_next/static/media/b9a37491f5c9eb6c-s.p.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "DegularDisplay";
+  src: url("https://marketing-site.vercel.zapier.com/_next/static/media/15d6d500777bacc6-s.p.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "DegularDisplay";
+  src: url("https://marketing-site.vercel.zapier.com/_next/static/media/c82ad8494f7a57ee-s.p.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Serrif";
+  src: url("https://marketing-site.vercel.zapier.com/_next/static/media/ec71a0abebc51e3c-s.p.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Serrif";
+  src: url("https://marketing-site.vercel.zapier.com/_next/static/media/097bec17c4bcefb5-s.p.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 300;
+  font-style: italic;
+}
+
 @layer base {
   :root {
-    --background: #030712;
-    --surface: #0a0e1e;
-    --surface-elevated: #11172f;
-    --accent: #8b5cf6;
-    --accent-glow: rgba(139, 92, 246, 0.35);
-    --cyan-glow: rgba(6, 182, 212, 0.3);
-    --border: rgba(255, 255, 255, 0.08);
+    --zapier-marketing-font-base: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --zapier-marketing-font-display: "DegularDisplay", "Degular Display", "Plus Jakarta Sans", var(--zapier-marketing-font-base);
+    --zapier-marketing-font-display-serif: "Serrif", "Newsreader", Georgia, serif;
+    --zapier-marketing-font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+    /* Zapier Exact Palette Tokens */
+    --background: #fffefb;
+    --foreground: #201515;
+
+    --zap-neutral-100: #fffefb;
+    --zap-neutral-200: #f8f4f0;
+    --zap-neutral-300: #eceae3;
+    --zap-neutral-400: #dfdcd2;
+    --zap-neutral-500: #c5c0b1;
+    --zap-neutral-600: #939084;
+    --zap-neutral-700: #605d52;
+    --zap-neutral-800: #36342e;
+    --zap-neutral-900: #201515;
+
+    --zap-brand: #ff4f00;
+    --zap-brand-hover: #d24304;
+    --zap-brand-light: #fff2eb;
+
+    --zap-border: #eceae3;
+    --zap-border-strong: #c5c0b1;
   }
 
   * {
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: #eceae3;
+    box-sizing: border-box;
   }
 
   html {
     scroll-behavior: auto !important;
-    background-color: #030712;
-    color: #f3f4f6;
+    background-color: #fffefb;
+    color: #201515;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    background-color: #030712;
-    color: #f3f4f6;
+    background-color: #fffefb;
+    color: #201515;
+    font-family: var(--zapier-marketing-font-base);
     overflow-x: hidden;
     min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* Zapier Headings Hierarchy */
+  h1 {
+    font-family: var(--zapier-marketing-font-display);
+    font-weight: 500;
+    line-height: 1.0;
+    letter-spacing: -0.035em;
+    color: #201515;
+  }
+
+  h2 {
+    font-family: var(--zapier-marketing-font-base);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    color: #201515;
+  }
+
+  h3, h4, h5, h6 {
+    font-family: var(--zapier-marketing-font-base);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: #201515;
+  }
+
+  p {
+    font-family: var(--zapier-marketing-font-base);
+    line-height: 1.5;
+    color: #36342e;
   }
 }
 
-/* Lenis smooth scrolling rules */
-html.lenis, html.lenis body {
-  height: auto;
+/* Typography Utility Classes */
+.font-display {
+  font-family: var(--zapier-marketing-font-display);
 }
 
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
+.font-heading {
+  font-family: var(--zapier-marketing-font-display);
 }
 
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
+.font-base {
+  font-family: var(--zapier-marketing-font-base);
 }
 
-.lenis.lenis-stopped {
-  overflow: hidden;
+.font-serif-editorial {
+  font-family: var(--zapier-marketing-font-display-serif);
+}
+
+.font-mono-code {
+  font-family: var(--zapier-marketing-font-mono);
+}
+
+/* Zapier Signature Eyebrow with Orange Bar */
+.zapier-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--zapier-marketing-font-base);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #605d52;
+}
+
+.zapier-eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 8px;
+  background-color: #ff4f00;
+  margin-right: 8px;
+  border-radius: 1px;
+}
+
+/* Zapier Pill Eyebrow */
+.zapier-eyebrow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background-color: #fff2eb;
+  color: #ff4f00;
+  border: 1px solid #ffd6c2;
 }
 
 /* Custom Scrollbar */
@@ -52,76 +188,154 @@ html.lenis, html.lenis body {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #030712;
+  background: #f8f4f0;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.25);
+  background-color: #c5c0b1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.5);
+  background-color: #ff4f00;
 }
 
-/* Background Grids & Dots */
-.bg-grid-pattern {
-  background-size: 48px 48px;
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+/* Zapier Official Button Styles */
+.btn-zap-primary {
+  height: 48px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-family: var(--zapier-marketing-font-base);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  color: #fffefb;
+  background-color: #ff4f00;
+  border: 1px solid #ff4f00;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.btn-zap-primary:hover {
+  background-color: #d24304;
+  border-color: #d24304;
+}
+.btn-zap-primary:hover .zap-arrow {
+  transform: translateX(4px);
+}
+.btn-zap-primary:active {
+  transform: scale(0.99);
 }
 
-.bg-dot-pattern {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+.btn-zap-dark {
+  height: 48px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-family: var(--zapier-marketing-font-base);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  color: #fffefb;
+  background-color: #201515;
+  border: 1px solid #201515;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.btn-zap-dark:hover {
+  background-color: #36342e;
+  border-color: #36342e;
+}
+.btn-zap-dark:hover .zap-arrow {
+  transform: translateX(4px);
+}
+
+.btn-zap-secondary {
+  height: 48px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-family: var(--zapier-marketing-font-base);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+  color: #201515;
+  background-color: transparent;
+  border: 1px solid #201515;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.btn-zap-secondary:hover {
+  color: #36342e;
+  border-color: #c5c0b1;
+  background-color: #f8f4f0;
+}
+.btn-zap-secondary:hover .zap-arrow {
+  transform: translateX(4px);
+}
+
+.zap-arrow {
+  display: inline-flex;
+  transition: transform 0.25s ease;
+}
+
+/* Zapier Cards */
+.zap-card {
+  background-color: #fffefb;
+  border: 1px solid #eceae3;
+  border-radius: 8px;
+  padding: 24px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.zap-card:hover {
+  border-color: #c5c0b1;
+  box-shadow: 0 4px 16px rgba(32, 21, 21, 0.05);
+}
+
+/* Zapier Inputs */
+.zap-input {
+  height: 48px;
+  padding: 10px 14px;
+  width: 100%;
+  color: #201515;
+  background-color: #fffefb;
+  border: 1px solid #c5c0b1;
+  border-radius: 4px;
+  font-family: var(--zapier-marketing-font-base);
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.zap-input:hover {
+  border-color: #939084;
+}
+.zap-input:focus {
+  border-color: #ff4f00;
+  box-shadow: 0 0 0 2px rgba(255, 79, 0, 0.15);
+}
+.zap-input::placeholder {
+  color: #939084;
+}
+
+/* Background Grids & Dots in Zapier Warm aesthetic */
+.bg-warm-dots {
+  background-image: radial-gradient(rgba(32, 21, 21, 0.08) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-/* Glassmorphism helpers */
-.glass-panel {
-  background: rgba(10, 14, 30, 0.72);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.glass-card:hover {
-  border-color: rgba(139, 92, 246, 0.4);
-  box-shadow: 0 0 25px -5px rgba(139, 92, 246, 0.2);
-}
-
-/* Animations */
-@keyframes pulseSlow {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.08);
-  }
-}
-
-.animate-pulse-slow {
-  animation: pulseSlow 7s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.shimmer-bg {
-  background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.03) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+.bg-warm-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(32, 21, 21, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(32, 21, 21, 0.04) 1px, transparent 1px);
 }

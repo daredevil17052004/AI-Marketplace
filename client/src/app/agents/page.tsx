@@ -1,20 +1,17 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot,
   Search,
-  Zap,
-  Filter,
-  ArrowRight,
   SlidersHorizontal,
-  ChevronRight,
   Sparkles,
 } from "lucide-react";
-import CardSpotlight from "@/components/CardSpotlight";
 import BackgroundBeams from "@/components/BackgroundBeams";
+import AgentCard from "@/components/AgentCard";
 import { fetchAgents, Agent } from "@/lib/api";
+import { HoverBorderGradient } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 export default function AgentsPage() {
@@ -54,42 +51,66 @@ export default function AgentsPage() {
     });
   }, [agents, search, selectedCategory]);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+    <div className="relative min-h-[calc(100vh-4.5rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-10">
       <BackgroundBeams />
 
       {/* Header */}
-      <div className="relative z-10 text-center max-w-2xl mx-auto space-y-3 pt-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Curated Autonomous Catalog</span>
+      <div className="relative z-10 text-center max-w-2xl mx-auto space-y-3 pt-6">
+        <div className="flex justify-center">
+          <HoverBorderGradient
+            as="div"
+            className="text-xs font-bold uppercase tracking-wider text-[#D43F00] py-1 px-3.5 flex items-center gap-1.5"
+          >
+            <span className="text-[#FF4F00] font-black">_</span>
+            <span>Curated Agent Directory</span>
+          </HoverBorderGradient>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="font-heading text-3xl sm:text-5xl font-extrabold text-[#201515] tracking-tight"
+        >
           Explore AI Agents
-        </h1>
-        <p className="text-xs sm:text-sm text-gray-400">
-          Find the right agent for code refactoring, query optimization, copywriting, and security audits. Billed per execution run.
+        </motion.h1>
+        <p className="text-sm text-[#5C524C]">
+          Select specialized agents for code refactoring, query optimization, copywriting, and schema validation. Pay per run.
         </p>
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="relative z-10 space-y-4">
+      <div className="relative z-10 space-y-4 max-w-4xl mx-auto w-full">
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {/* Search bar */}
           <div className="relative w-full sm:flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#887E78]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by agent name, description, or keyword..."
-              className="w-full pl-11 pr-4 py-3 bg-gray-950/70 border border-white/10 rounded-2xl text-sm text-white placeholder-gray-500 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all backdrop-blur-md"
+              placeholder="Search agents by name, task, or keyword..."
+              className="w-full pl-11 pr-16 py-3.5 bg-white border border-[#D5CBC0] rounded-full text-sm text-[#201515] placeholder-[#9C9087] outline-none focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20 transition-all shadow-xs"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-white"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[#887E78] hover:text-[#201515] cursor-pointer"
               >
                 Clear
               </button>
@@ -97,24 +118,37 @@ export default function AgentsPage() {
           </div>
         </div>
 
-        {/* Category Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          <SlidersHorizontal className="w-4 h-4 text-gray-500 shrink-0 ml-1 mr-1" />
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setSelectedCategory(cat)}
-              className={cn(
-                "px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer",
-                selectedCategory === cat
-                  ? "bg-violet-600 text-white shadow-md shadow-violet-600/30 scale-105"
-                  : "bg-white/[0.03] text-gray-400 hover:text-white hover:bg-white/[0.08] border border-white/5"
-              )}
-            >
-              {cat}
-            </button>
-          ))}
+        {/* Category Pills with animated spring layoutId */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none justify-center">
+          <SlidersHorizontal className="w-4 h-4 text-[#887E78] shrink-0 mr-1" />
+          {categories.map((cat) => {
+            const isSelected = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={cn(
+                  "relative px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors duration-200 cursor-pointer z-10",
+                  isSelected
+                    ? "text-[#FFFDF9]"
+                    : "text-[#5C524C] hover:text-[#201515]"
+                )}
+              >
+                {isSelected && (
+                  <motion.div
+                    layoutId="categoryPill"
+                    className="absolute inset-0 bg-[#201515] rounded-full z-[-1] shadow-xs"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+                {!isSelected && (
+                  <div className="absolute inset-0 bg-white border border-[#EAE3D9] rounded-full z-[-2]" />
+                )}
+                {cat}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -125,16 +159,20 @@ export default function AgentsPage() {
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="h-64 rounded-2xl border border-white/5 bg-white/[0.02] shimmer-bg"
+                className="h-64 rounded-2xl border border-[#EAE3D9] bg-white animate-pulse"
               />
             ))}
           </div>
         ) : filteredAgents.length === 0 ? (
-          <div className="p-16 text-center space-y-4 rounded-3xl border border-white/5 bg-gray-900/30 backdrop-blur-md">
-            <Bot className="w-10 h-10 text-gray-600 mx-auto" />
-            <h3 className="text-base font-bold text-white">No matching agents found</h3>
-            <p className="text-xs text-gray-500 max-w-sm mx-auto">
-              Try adjusting your search terms or filter selection to find available autonomous agents.
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-16 text-center space-y-4 rounded-3xl border border-[#EAE3D9] bg-white shadow-xs max-w-lg mx-auto"
+          >
+            <Bot className="w-10 h-10 text-[#887E78] mx-auto" />
+            <h3 className="font-heading text-lg font-bold text-[#201515]">No matching agents found</h3>
+            <p className="text-xs text-[#5C524C] max-w-sm mx-auto">
+              Try adjusting your search query or choosing another category.
             </p>
             <button
               type="button"
@@ -142,71 +180,30 @@ export default function AgentsPage() {
                 setSearch("");
                 setSelectedCategory("All");
               }}
-              className="text-xs font-semibold text-violet-400 hover:text-violet-300 underline"
+              className="btn-zap-secondary text-xs px-4 py-2"
             >
-              Reset filters
+              Reset Filters
             </button>
-          </div>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             {filteredAgents.map((agent) => (
-              <CardSpotlight
-                key={agent.id}
-                className="p-6 flex flex-col justify-between group hover:border-violet-500/30 transition-all duration-300"
-              >
-                <div className="space-y-4">
-                  {/* Category and Credit Cost */}
-                  <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-violet-500/10 text-violet-300 border border-violet-500/20">
-                      {agent.category || "General"}
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-300 bg-amber-400/10 px-2.5 py-0.5 rounded-full border border-amber-400/20">
-                      <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
-                      {agent.creditCost} {agent.creditCost === 1 ? "credit" : "credits"}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-lg font-bold text-white group-hover:text-violet-300 transition-colors">
-                    {agent.name}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">
-                    {agent.description}
-                  </p>
-
-                  {/* Tags */}
-                  {agent.tags && agent.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {agent.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-[10px] font-mono text-gray-500 bg-white/[0.03] px-2 py-0.5 rounded-md"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer / CTA */}
-                <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between">
-                  <span className="text-[11px] text-gray-500 font-mono">
-                    {agent.inputSchema?.fields?.length || 2} inputs required
-                  </span>
-                  <Link
-                    href={`/agents/${agent.id}`}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-white px-3.5 py-1.5 rounded-xl bg-violet-600 hover:bg-violet-500 shadow-md shadow-violet-600/20 hover:shadow-violet-600/40 transition-all cursor-pointer"
-                  >
-                    <span>Run Agent</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </CardSpotlight>
+              <motion.div key={agent.id} variants={cardVariants}>
+                <AgentCard
+                  id={agent.id}
+                  name={agent.name}
+                  description={agent.description}
+                  creditCost={agent.creditCost}
+                  category={agent.category}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>
