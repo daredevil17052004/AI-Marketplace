@@ -2,7 +2,7 @@ CREATE TYPE "public"."job_status" AS ENUM('pending', 'processing', 'completed', 
 CREATE TYPE "public"."user_role" AS ENUM('user', 'admin');--> statement-breakpoint
 CREATE TABLE "agents" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"email" varchar(255) NOT NULL,
+	"name" varchar(255) NOT NULL,
 	"description" text NOT NULL,
 	"system_prompt" text NOT NULL,
 	"input_schema" jsonb NOT NULL,

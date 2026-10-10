@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { db } from "../db/index.js";
-import { users } from "../db/schema.js";
+import { users, creditsLedger } from "../db/schema.js";
 import { ConflictError, UnauthorizedError } from "../lib/errors.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../lib/tokens.js";
 
@@ -47,6 +47,13 @@ export async function registerUser(
             email: users.email,
             role: users.role,
         });
+
+    // Provide default signup bonus credits
+    await db.insert(creditsLedger).values({
+        userId: newUser.id,
+        amount: 100,
+        reason: "signup_bonus",
+    });
 
     const accessToken = signAccessToken({
         userId: newUser.id,
