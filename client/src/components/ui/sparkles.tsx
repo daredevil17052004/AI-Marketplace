@@ -1,8 +1,27 @@
 "use client";
 
-import React, { useEffect, useId, useState } from "react";
+import React, { useId, useMemo } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+
+interface Particle {
+  x: number;
+  y: number;
+  size: number;
+  duration: number;
+  delay: number;
+}
+
+function generateParticles(count: number, minSize: number, maxSize: number): Particle[] {
+  const capped = Math.min(count, 80);
+  return Array.from({ length: capped }, () => ({
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * (maxSize - minSize) + minSize,
+    duration: Math.random() * 3 + 2,
+    delay: Math.random() * 2,
+  }));
+}
 
 export const SparklesCore = ({
   id,
@@ -23,24 +42,11 @@ export const SparklesCore = ({
 }) => {
   const generatedId = useId();
   const canvasId = id || generatedId;
-  const [particles, setParticles] = useState<
-    Array<{ x: number; y: number; size: number; duration: number; delay: number }>
-  >([]);
 
-  useEffect(() => {
-    const count = Math.min(particleDensity, 80);
-    const pts = [];
-    for (let i = 0; i < count; i++) {
-      pts.push({
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * (maxSize - minSize) + minSize,
-        duration: Math.random() * 3 + 2,
-        delay: Math.random() * 2,
-      });
-    }
-    setParticles(pts);
-  }, [particleDensity, minSize, maxSize]);
+  const particles = useMemo(
+    () => generateParticles(particleDensity, minSize, maxSize),
+    [particleDensity, minSize, maxSize]
+  );
 
   return (
     <div

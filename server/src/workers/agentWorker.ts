@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { redisConnection } from "../lib/redis.js";
 import { AgentJobPayload } from "../lib/queue.js";
 import { db } from "../db/index.js";
-import { jobs } from "../db/schema.js";
+import { jobs, creditsLedger } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 import { getAgentById } from "../services/agentService.js";
 import { publishJobEvent } from "../lib/pubsub.js";
@@ -31,11 +31,11 @@ async function processJob(job: Job<AgentJobPayload>) {
     // Step 3: call Gemini
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
-      systemInstruction: agent.systemPrompt,  // agent's instruction
+      systemInstruction: agent.systemPrompt,
     });
 
     const result = await model.generateContent(
-      JSON.stringify(inputPayload)  // user's input
+      JSON.stringify(inputPayload)
     );
 
     const output = result.response.text();
@@ -50,17 +50,19 @@ async function processJob(job: Job<AgentJobPayload>) {
       })
       .where(eq(jobs.id, jobId));
 
-    // publisher added
-    await publishJobEvent(userId,{
+    await publishJobEvent(userId, {
       jobId,
-      status:"completed",
-      outputResult:{text: output},
+      status: "completed",
+      outputResult: { text: output },
     });
 
     jobLogger.info({ durationMs: Date.now() - startTime }, 'Job completed successfully');
 
   } catch (err) {
-    // mark as failed immediately in DB before BullMQ retries
+    // Only mark failed and issue refund on the LAST retry attempt
+    const isLastAttempt = job.attemptsMade >= (job.opts.attempts ?? 1) - 1;
+
+    // Always update status so the UI can reflect the failure immediately
     await db.update(jobs)
       .set({
         status: "failed",
@@ -68,6 +70,31 @@ async function processJob(job: Job<AgentJobPayload>) {
         completedAt: new Date(),
       })
       .where(eq(jobs.id, jobId));
+
+    // Issue credit refund on final failure so the user is not charged for a broken run
+    if (isLastAttempt) {
+      try {
+        const agent = await getAgentById(agentId).catch(() => null);
+        if (agent && agent.creditCost > 0) {
+          await db.insert(creditsLedger).values({
+            userId,
+            amount: agent.creditCost,   // positive = refund
+            reason: "job_refund",
+            jobId,
+          });
+          jobLogger.info({ creditRefund: agent.creditCost }, 'Credits refunded after final job failure');
+        }
+      } catch (refundErr) {
+        // Refund failure must not block the original error propagation
+        jobLogger.error({ err: refundErr }, 'Failed to issue credit refund');
+      }
+    }
+
+    await publishJobEvent(userId, {
+      jobId,
+      status: "failed",
+      errorMessage: err instanceof Error ? err.message : "Unknown error",
+    });
 
     jobLogger.error({ err, durationMs: Date.now() - startTime }, 'Job failed during processing');
     throw err; // rethrow so BullMQ knows the job failed and can retry
@@ -84,26 +111,8 @@ worker.on("completed", (job) => {
   logger.info({ jobId: job.id }, 'Job completed');
 });
 
-worker.on("failed", async (job, err) => {
+worker.on("failed", (job, err) => {
   logger.error({ err, jobId: job?.id }, 'Job failed');
-
-  if (!job) return;
-
-  if (job.data.jobId) {
-    await db.update(jobs)
-      .set({
-        status: "failed",
-        errorMessage: err.message,
-        completedAt: new Date(),
-      })
-      .where(eq(jobs.id, job.data.jobId));
-  }
-
-  await publishJobEvent(job.data.userId,{
-    jobId:job.data.jobId,
-    status:"failed",
-    errorMessage: err.message,
-  })
 });
 
 logger.info("Worker started, waiting for jobs...");

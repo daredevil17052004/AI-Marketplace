@@ -1,5 +1,5 @@
 // src/services/jobService.ts
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { jobs, creditsLedger, agents } from "../db/schema.js";
 import { enqueueAgentJob } from "../lib/queue.js";
@@ -74,4 +74,12 @@ export async function getJobById(jobId: string, userId: string) {
   if (job.userId !== userId) throw new NotFoundError("Job");
 
   return job;
+}
+
+export async function listUserJobs(userId: string) {
+  return db
+    .select()
+    .from(jobs)
+    .where(eq(jobs.userId, userId))
+    .orderBy(desc(jobs.createdAt));
 }

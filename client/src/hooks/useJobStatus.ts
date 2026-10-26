@@ -1,7 +1,23 @@
-import { useEffect, useState } from "react";
-import { getAccessToken } from "@/lib/auth";
+"use client";
 
-const WS_BASE = "ws://localhost:4000";
+import { useEffect, useState, useRef } from "react";
+import { getAccessToken } from "@/lib/auth";
+import { fetchJob } from "@/lib/api";
+
+function getWsUrl(): string {
+  if (process.env.NEXT_PUBLIC_WS_URL) {
+    return process.env.NEXT_PUBLIC_WS_URL;
+  }
+  const backend = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL;
+  if (backend) {
+    return backend.replace(/^https:/, "wss:").replace(/^http:/, "ws:");
+  }
+  if (typeof window !== "undefined") {
+    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${proto}//${window.location.host}`;
+  }
+  return "ws://localhost:4000";
+}
 
 export type JobStatus = "pending" | "processing" | "completed" | "failed";
 
@@ -19,62 +35,119 @@ interface JobUpdateMessage {
 }
 
 /**
- * Opens a WebSocket connection to the Express server and listens for updates
- * that match the given jobId.  The socket is closed when the component unmounts
- * or when the job reaches a terminal state (completed / failed).
+ * Listens for job updates via WebSocket and falls back to HTTP polling
+ * if WebSocket is unavailable or disconnects.
  */
 export function useJobStatus(jobId: string | null): JobStatusState {
+  // Job is now imported but the import warning was already there — we use the type from fetchJob
   const [state, setState] = useState<JobStatusState>({
     status: "pending",
     outputResult: null,
     errorMessage: null,
   });
 
+  // Mirror status in a ref so closures can read latest value without dep-array issues
+  const statusRef = useRef<JobStatus>("pending");
+
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
-    // Don't open a socket until we have a real jobId
     if (!jobId) return;
 
-    const token = getAccessToken();
-    const url = token ? `${WS_BASE}?token=${token}` : WS_BASE;
+    let isSubscribed = true;
+    let ws: WebSocket | null = null;
 
-    const ws = new WebSocket(url);
+    // Start fallback HTTP polling helper
+    const startPolling = () => {
+      if (pollIntervalRef.current) return;
+      pollIntervalRef.current = setInterval(async () => {
+        if (!isSubscribed) return;
+        try {
+          const job = await fetchJob(jobId);
+          if (job) {
+            setState({
+              status: (job.status as JobStatus) || "processing",
+              outputResult:
+                typeof job.outputResult === "string"
+                  ? { text: job.outputResult }
+                  : (job.outputResult as { text: string } | null) ?? null,
+              errorMessage: job.errorMessage ?? null,
+            });
 
-    ws.onopen = () => {
-      // Optionally subscribe to a specific job channel if the server supports it
-      ws.send(JSON.stringify({ type: "subscribe", jobId }));
+            if (job.status === "completed" || job.status === "failed") {
+              if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+              }
+            }
+          }
+        } catch {
+          // ignore transient poll errors
+        }
+      }, 2500);
     };
 
-    ws.onmessage = (event: MessageEvent) => {
-      try {
-        const data: JobUpdateMessage = JSON.parse(event.data as string);
+    try {
+      const token = getAccessToken();
+      const wsBase = getWsUrl();
+      const url = token ? `${wsBase}?token=${token}` : wsBase;
 
-        // Only act on messages for the job we care about
-        if (data.jobId !== jobId) return;
+      ws = new WebSocket(url);
 
-        setState({
-          status: data.status,
-          outputResult: data.outputResult ?? null,
-          errorMessage: data.errorMessage ?? null,
-        });
-      } catch {
-        // Ignore malformed messages
-      }
-    };
+      ws.onopen = () => {
+        ws?.send(JSON.stringify({ type: "subscribe", jobId }));
+      };
 
-    ws.onerror = () => {
-      setState((prev) => ({
-        ...prev,
-        status: "failed",
-        errorMessage: "WebSocket connection error.",
-      }));
-    };
+      ws.onmessage = (event: MessageEvent) => {
+        try {
+          const data: JobUpdateMessage = JSON.parse(event.data as string);
+          if (data.jobId !== jobId) return;
 
-    // Cleanup: close the socket when the component unmounts or jobId changes
+          statusRef.current = data.status;
+          setState({
+            status: data.status,
+            outputResult: data.outputResult ?? null,
+            errorMessage: data.errorMessage ?? null,
+          });
+
+          if (data.status === "completed" || data.status === "failed") {
+            if (pollIntervalRef.current) {
+              clearInterval(pollIntervalRef.current);
+              pollIntervalRef.current = null;
+            }
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      };
+
+      ws.onerror = () => {
+        // Fall back to polling instead of immediately hard failing
+        startPolling();
+      };
+
+      ws.onclose = () => {
+        // Use a ref to read the latest status without adding it as a dep
+        if (statusRef.current !== "completed" && statusRef.current !== "failed") {
+          startPolling();
+        }
+      };
+    } catch {
+      startPolling();
+    }
+
     return () => {
-      if (ws.readyState === 1) { // OPEN
-        ws.close();
-      } else if (ws.readyState === 0) { // CONNECTING
-        ws.onopen = () => ws.close();
+      isSubscribed = false;
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      if (ws) {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        } else if (ws.readyState === WebSocket.CONNECTING) {
+          ws.onopen = () => ws?.close();
+        }
       }
     };
   }, [jobId]);

@@ -4,7 +4,7 @@ import { useJobStatus } from "@/hooks/useJobStatus";
 import Link from "next/link";
 import { Check, Copy, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface JobStatusProps {
   jobId: string;
@@ -29,9 +29,13 @@ export default function JobStatus({ jobId }: JobStatusProps) {
   const { status, outputResult, errorMessage } = useJobStatus(jobId);
   const [copied, setCopied] = useState(false);
 
-  const textOutput = typeof outputResult === "string" 
-    ? outputResult 
-    : (outputResult as any)?.text ?? (outputResult ? JSON.stringify(outputResult, null, 2) : "");
+  const textOutput = outputResult === null || outputResult === undefined
+    ? ""
+    : typeof outputResult === "string"
+    ? outputResult
+    : typeof outputResult === "object" && "text" in outputResult && typeof (outputResult as { text: string }).text === "string"
+    ? (outputResult as { text: string }).text
+    : JSON.stringify(outputResult, null, 2);
 
   const handleCopy = () => {
     if (textOutput) {

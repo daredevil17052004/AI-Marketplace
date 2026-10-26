@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import BackgroundBeams from "@/components/BackgroundBeams";
 import CardSpotlight from "@/components/CardSpotlight";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
 import { SparklesCore } from "@/components/ui";
 import { Loader2, AlertCircle, ArrowRight, Zap } from "lucide-react";
 
@@ -153,6 +154,18 @@ export default function RegisterPage() {
                 </>
               )}
             </button>
+
+            {/* Divider */}
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-[#EAE3D9]"></div>
+              <span className="flex-shrink mx-3 text-[11px] font-bold text-[#887E78] uppercase tracking-wider">
+                Or
+              </span>
+              <div className="flex-grow border-t border-[#EAE3D9]"></div>
+            </div>
+
+            {/* Google OAuth Signup */}
+            <GoogleAuthButton mode="signup" onError={(err) => setError(err)} />
           </form>
         </CardSpotlight>
 

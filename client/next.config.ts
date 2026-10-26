@@ -1,14 +1,26 @@
 import type { NextConfig } from "next";
 
+let backendUrl =
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "https://ai-marketplace-mr1h.onrender.com";
+
+// Ensure destination is a valid URL starting with http:// or https:// even if redacted during build
+if (!backendUrl.startsWith("http://") && !backendUrl.startsWith("https://")) {
+  backendUrl = "https://ai-marketplace-mr1h.onrender.com";
+}
+
+// Strip trailing slash if present
+backendUrl = backendUrl.replace(/\/+$/, "");
+
 const nextConfig: NextConfig = {
-  /* config options here */
-  async rewrites(){
+  async rewrites() {
     return [
       {
         source: "/api/:path*",
-        destination: "http://localhost:4000/api/:path*"
-      }
-    ]
+        destination: `${backendUrl}/api/:path*`,
+      },
+    ];
   },
   reactCompiler: true,
 };

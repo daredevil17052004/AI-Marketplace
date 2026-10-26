@@ -26,35 +26,44 @@ export default function JobDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState(false);
 
-  const loadJob = async (silent = false) => {
-    if (!jobId) return;
-    try {
-      const data = await fetchJob(jobId);
-      setJob(data);
-    } catch (err) {
-      if (!silent) {
-        setError(err instanceof Error ? err.message : "Failed to load job.");
-      }
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadJob();
+    if (!jobId) return;
+    let ignore = false;
+
+    fetchJob(jobId)
+      .then((data) => {
+        if (!ignore) {
+          setJob(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : "Failed to load job.");
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [jobId]);
 
   // Polling until terminal status
   useEffect(() => {
-    if (!job) return;
+    if (!job || !jobId) return;
     if (job.status === "completed" || job.status === "failed") return;
 
     const interval = setInterval(() => {
-      loadJob(true);
+      fetchJob(jobId)
+        .then((data) => {
+          setJob(data);
+        })
+        .catch(() => {});
     }, 2500);
 
     return () => clearInterval(interval);
-  }, [job]);
+  }, [job, jobId]);
 
   const copyJobId = async () => {
     if (!jobId) return;

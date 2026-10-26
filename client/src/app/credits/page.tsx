@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -27,7 +27,7 @@ export default function CreditsPage() {
   const [loadingLedger, setLoadingLedger] = useState(true);
   const [purchasingTier, setPurchasingTier] = useState<number | null>(null);
 
-  const loadLedger = async () => {
+  const loadLedger = useCallback(async () => {
     try {
       const data = await fetchCreditLedger();
       setLedger(data);
@@ -36,10 +36,25 @@ export default function CreditsPage() {
     } finally {
       setLoadingLedger(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadLedger();
+    let ignore = false;
+    fetchCreditLedger()
+      .then((data) => {
+        if (!ignore) {
+          setLedger(data);
+          setLoadingLedger(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load credit ledger:", err);
+        if (!ignore) setLoadingLedger(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const handleTopUp = async (amount: number) => {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import {
   motion,
   useTransform,
@@ -8,7 +9,6 @@ import {
   useMotionValue,
   useSpring,
 } from "framer-motion";
-import { cn } from "@/lib/utils";
 
 export const AnimatedTooltip = ({
   items,
@@ -33,8 +33,9 @@ export const AnimatedTooltip = ({
     springConfig
   );
 
-  const handleMouseMove = (event: any) => {
-    const halfWidth = event.target.offsetWidth / 2;
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
+    const target = event.currentTarget;
+    const halfWidth = target.offsetWidth / 2;
     x.set(event.nativeEvent.offsetX - halfWidth);
   };
 
@@ -83,10 +84,12 @@ export const AnimatedTooltip = ({
             className="h-10 w-10 rounded-full border-2 border-white bg-[#FAF8F5] flex items-center justify-center text-xs font-semibold text-[#201515] shadow-sm relative transition duration-300 group-hover:scale-105 group-hover:z-30 cursor-pointer overflow-hidden"
           >
             {item.image ? (
-              <img
+              <Image
                 src={item.image}
                 alt={item.name}
-                className="object-cover !m-0 !p-0 object-top rounded-full h-full w-full"
+                width={40}
+                height={40}
+                className="object-cover object-top rounded-full h-full w-full"
               />
             ) : (
               <span className="text-[#FF4F00] font-heading font-medium">

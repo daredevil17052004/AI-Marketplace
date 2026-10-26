@@ -9,7 +9,13 @@ import {
   saveTokens,
   clearTokens,
 } from "@/lib/auth";
-import { login as apiLogin, register as apiRegister, logout as apiLogout, fetchCreditBalance } from "@/lib/api";
+import {
+  login as apiLogin,
+  register as apiRegister,
+  logout as apiLogout,
+  loginWithGoogle as apiGoogleLogin,
+  fetchCreditBalance,
+} from "@/lib/api";
 
 interface AuthContextType {
   user: StoredUser | null;
@@ -17,6 +23,7 @@ interface AuthContextType {
   balance: number;
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<void>;
+  googleLogin: (idToken: string) => Promise<void>;
   register: (email: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshBalance: () => Promise<void>;
@@ -91,6 +98,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const googleLogin = async (idToken: string) => {
+    setIsLoading(true);
+    try {
+      const res = await apiGoogleLogin(idToken);
+      saveTokens(res.accessToken, res.refreshToken, res.user);
+      setUser(res.user);
+      setAccessToken(res.accessToken);
+      await refreshBalance();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const register = async (email: string, pass: string) => {
     setIsLoading(true);
     try {
@@ -122,6 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         balance,
         isLoading,
         login,
+        googleLogin,
         register,
         logout,
         refreshBalance,

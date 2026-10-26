@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import BackgroundBeams from "@/components/BackgroundBeams";
 import CardSpotlight from "@/components/CardSpotlight";
+import GoogleAuthButton from "@/components/GoogleAuthButton";
 import { SparklesCore } from "@/components/ui";
 import { Loader2, AlertCircle, ArrowRight, ShieldCheck } from "lucide-react";
 
@@ -135,6 +136,18 @@ export default function LoginPage() {
                 </>
               )}
             </button>
+
+            {/* Divider */}
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-[#EAE3D9]"></div>
+              <span className="flex-shrink mx-3 text-[11px] font-bold text-[#887E78] uppercase tracking-wider">
+                Or
+              </span>
+              <div className="flex-grow border-t border-[#EAE3D9]"></div>
+            </div>
+
+            {/* Google OAuth Login */}
+            <GoogleAuthButton mode="signin" onError={(err) => setError(err)} />
 
             {/* Quick Demo Credentials */}
             <div className="pt-4 border-t border-[#EAE3D9] space-y-2">

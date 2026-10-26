@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -43,7 +43,7 @@ export default function AdminPage() {
   // Delete modal state
   const [agentToDelete, setAgentToDelete] = useState<Agent | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [agentsData, jobsData, usersData] = await Promise.all([
@@ -59,10 +59,31 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadData();
+    let ignore = false;
+    Promise.all([
+      fetchAdminAgents(),
+      fetchAdminJobs(),
+      fetchAdminUsers(),
+    ])
+      .then(([agentsData, jobsData, usersData]) => {
+        if (!ignore) {
+          setAgents(agentsData);
+          setJobs(jobsData);
+          setUsers(usersData);
+          setLoading(false);
+        }
+      })
+      .catch((e) => {
+        console.error("Admin data load error:", e);
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   const handleToggle = async (id: string, currentStatus: boolean) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 interface CardSpotlightProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -16,18 +16,19 @@ export default function CardSpotlight({
   className,
   ...props
 }: CardSpotlightProps) {
-  const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+  // Use state for mouse position so the gradient rerenders correctly
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    mouseRef.current = {
+    setMousePos({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
-    };
-  }
+    });
+  }, []);
 
   return (
     <div
@@ -45,7 +46,7 @@ export default function CardSpotlight({
         className="pointer-events-none absolute -inset-px transition-opacity duration-300"
         style={{
           opacity: isHovered ? 1 : 0,
-          background: `radial-gradient(${radius}px circle at ${mouseRef.current.x}px ${mouseRef.current.y}px, ${color}, transparent 80%)`,
+          background: `radial-gradient(${radius}px circle at ${mousePos.x}px ${mousePos.y}px, ${color}, transparent 80%)`,
         }}
       />
       <div className="relative z-10">{children}</div>

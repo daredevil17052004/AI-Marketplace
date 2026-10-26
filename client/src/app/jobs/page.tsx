@@ -1,16 +1,14 @@
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Layers,
   ArrowRight,
   RefreshCw,
   Search,
   Bot,
-  Clock,
-  Sparkles,
 } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
 import BackgroundBeams from "@/components/BackgroundBeams";
@@ -21,40 +19,69 @@ export default function JobsHistoryPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [search, setSearch] = useState("");
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const loadJobs = async (silent = false) => {
+  const loadJobs = useCallback(async (silent = false) => {
     if (!silent) setIsRefreshing(true);
     try {
       const data = await fetchJobs();
       setJobs(data);
+      setError(null);
     } catch (e) {
-      console.error("Failed to load jobs:", e);
+      if (!silent) {
+        setError(e instanceof Error ? e.message : "Failed to load jobs.");
+      }
     } finally {
       setLoading(false);
       setIsRefreshing(false);
     }
-  };
-
-  useEffect(() => {
-    loadJobs();
   }, []);
 
-  // Auto-polling if any job is pending or processing
+  // Initial load
+  useEffect(() => {
+    let ignore = false;
+    fetchJobs()
+      .then((data) => {
+        if (!ignore) {
+          setJobs(data);
+          setError(null);
+          setLoading(false);
+        }
+      })
+      .catch((e) => {
+        if (!ignore) {
+          setError(e instanceof Error ? e.message : "Failed to load jobs.");
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  // Auto-poll while any job is in a non-terminal state
   useEffect(() => {
     const hasActiveJob = jobs.some(
       (j) => j.status === "pending" || j.status === "processing"
     );
 
-    if (!hasActiveJob) return;
+    if (hasActiveJob) {
+      pollingRef.current = setInterval(() => {
+        loadJobs(true);
+      }, 3500);
+    }
 
-    const timer = setInterval(() => {
-      loadJobs(true);
-    }, 3500);
-
-    return () => clearInterval(timer);
-  }, [jobs]);
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current);
+        pollingRef.current = null;
+      }
+    };
+  }, [jobs, loadJobs]);
 
   const statuses = ["All", "Pending", "Processing", "Completed", "Failed"];
 
@@ -90,7 +117,7 @@ export default function JobsHistoryPage() {
             animate={{ opacity: 1, x: 0 }}
             className="font-heading text-2xl sm:text-3xl font-extrabold text-[#201515] tracking-tight"
           >
-            Job History & Runs
+            Job History &amp; Runs
           </motion.h1>
           <p className="text-sm text-[#5C524C]">
             Real-time feed of all asynchronous agent executions processed by BullMQ.
@@ -108,6 +135,13 @@ export default function JobsHistoryPage() {
         </button>
       </div>
 
+      {/* Error Banner */}
+      {error && (
+        <div className="relative z-10 bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl px-5 py-4 text-sm text-[#BE123C]">
+          {error}
+        </div>
+      )}
+
       {/* Filters and Search Bar */}
       <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4">
         {/* Search */}
@@ -122,7 +156,7 @@ export default function JobsHistoryPage() {
           />
         </div>
 
-        {/* Status Pills with animated spring pill */}
+        {/* Status Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
           {statuses.map((s) => {
             const isSelected = selectedStatus === s;
@@ -155,7 +189,7 @@ export default function JobsHistoryPage() {
         </div>
       </div>
 
-      {/* Jobs Feed / Table */}
+      {/* Jobs Feed */}
       <div className="relative z-10">
         {loading ? (
           <div className="space-y-3">
