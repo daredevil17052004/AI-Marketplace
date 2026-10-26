@@ -125,19 +125,31 @@ export async function loginUser(
     return issueTokens({ id: user.id, email: user.email, role: user.role });
 }
 
-// ─── Google OAuth ─────────────────────────────────────────────────────────────
-
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const googleClient = new OAuth2Client();
 
 export async function loginWithGoogle(idToken: string): Promise<AuthResult> {
-    const ticket = await googleClient.verifyIdToken({
-        idToken,
-        audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    if (!clientId || clientId === "your_google_client_id_here") {
+        throw new UnauthorizedError(
+            "Google authentication is not configured on the server. Please set GOOGLE_CLIENT_ID."
+        );
+    }
+
+    let ticket;
+    try {
+        ticket = await googleClient.verifyIdToken({
+            idToken,
+            audience: clientId,
+        });
+    } catch (err) {
+        throw new UnauthorizedError(
+            `Invalid or expired Google token: ${err instanceof Error ? err.message : "Verification failed"}`
+        );
+    }
 
     const payload = ticket.getPayload();
     if (!payload || !payload.email) {
-        throw new UnauthorizedError("Invalid Google token");
+        throw new UnauthorizedError("Invalid Google token: missing email in token payload");
     }
 
     const email = payload.email.toLowerCase();
