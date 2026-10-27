@@ -174,10 +174,30 @@ export async function fetchCreditLedger(): Promise<CreditLedgerItem[]> {
   return request<CreditLedgerItem[]>("/credits/ledger");
 }
 
-export async function topUpCredits(amount: number): Promise<{ balance: number }> {
-  return request<{ balance: number }>("/credits/topup", {
+export interface RazorpayOrderResponse {
+  orderId: string;
+  amount: number;
+  currency: string;
+  credits: number;
+  keyId: string;
+}
+
+export async function createCreditOrder(credits: number): Promise<RazorpayOrderResponse> {
+  return request<RazorpayOrderResponse>("/credits/order", {
     method: "POST",
-    body: JSON.stringify({ amount }),
+    body: JSON.stringify({ credits }),
+  });
+}
+
+export async function verifyCreditPayment(data: {
+  razorpayOrderId: string;
+  razorpayPaymentId: string;
+  razorpaySignature: string;
+  credits: number;
+}): Promise<{ balance: number }> {
+  return request<{ balance: number }>("/credits/verify", {
+    method: "POST",
+    body: JSON.stringify(data),
   });
 }
 

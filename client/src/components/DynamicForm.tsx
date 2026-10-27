@@ -12,6 +12,9 @@ interface DynamicFormProps {
   userBalance: number;
   onSubmit: (formData: Record<string, unknown>) => Promise<void>;
   isLoading?: boolean;
+  initialValues?: Record<string, unknown>;
+  onSavePreset?: (values: Record<string, unknown>) => void;
+  prefillBanner?: React.ReactNode;
 }
 
 export default function DynamicForm({
@@ -20,12 +23,17 @@ export default function DynamicForm({
   userBalance,
   onSubmit,
   isLoading = false,
+  initialValues,
+  onSavePreset,
+  prefillBanner,
 }: DynamicFormProps) {
-  // Initialize default form state
+  // Initialize form state — prefer initialValues (re-run prefill), then schema defaults
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
     const initial: Record<string, unknown> = {};
     fields.forEach((f) => {
-      if (f.defaultValue !== undefined) {
+      if (initialValues && initialValues[f.name] !== undefined) {
+        initial[f.name] = initialValues[f.name];
+      } else if (f.defaultValue !== undefined) {
         initial[f.name] = f.defaultValue;
       } else if (f.type === "boolean") {
         initial[f.name] = false;
@@ -80,7 +88,10 @@ export default function DynamicForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Credit warning banner if balance too low */}
+      {/* Prefill banner (Re-run notice / preset loaded notice) */}
+      {prefillBanner}
+
+      {/* Credit warning banner if balance too low */}}
       {!hasEnoughCredits && (
         <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-4 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-[#E11D48] shrink-0 mt-0.5" />
@@ -208,26 +219,37 @@ export default function DynamicForm({
           <span className="text-[#887E78]">(Balance: {userBalance})</span>
         </div>
 
-        <button
-          type="submit"
-          disabled={!hasEnoughCredits || isLoading}
-          className={cn(
-            "btn-zap-primary w-full sm:w-auto",
-            (!hasEnoughCredits || isLoading) && "opacity-50 cursor-not-allowed hover:transform-none hover:shadow-none"
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {onSavePreset && (
+            <button
+              type="button"
+              onClick={() => onSavePreset(formData)}
+              className="btn-zap-secondary text-xs py-2.5 px-4 flex-shrink-0"
+            >
+              Save as Preset
+            </button>
           )}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Queuing Job…</span>
-            </>
-          ) : (
-            <>
-              <span>Execute Agent</span>
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
+          <button
+            type="submit"
+            disabled={!hasEnoughCredits || isLoading}
+            className={cn(
+              "btn-zap-primary w-full sm:w-auto flex-1 sm:flex-none",
+              (!hasEnoughCredits || isLoading) && "opacity-50 cursor-not-allowed hover:transform-none hover:shadow-none"
+            )}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Queuing Job…</span>
+              </>
+            ) : (
+              <>
+                <span>Execute Agent</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </form>
   );
