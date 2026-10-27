@@ -91,14 +91,19 @@ export default function GoogleAuthButton({ mode = "signin", onError }: GoogleAut
     };
   }, [isConfigured, onError]);
 
+  const initializedRef = useRef<string | null>(null);
+
   useEffect(() => {
-    if (!scriptLoaded || !isConfigured || !window.google?.accounts?.id) return;
+    if (!scriptLoaded || !isConfigured || !window.google?.accounts?.id || !clientId) return;
 
     try {
-      window.google.accounts.id.initialize({
-        client_id: clientId as string,
-        callback: handleCredentialResponse,
-      });
+      if (initializedRef.current !== clientId) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleCredentialResponse,
+        });
+        initializedRef.current = clientId;
+      }
 
       if (buttonRef.current) {
         buttonRef.current.innerHTML = "";

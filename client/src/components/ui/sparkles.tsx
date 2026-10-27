@@ -42,11 +42,11 @@ export const SparklesCore = ({
 }) => {
   const generatedId = useId();
   const canvasId = id || generatedId;
+  const [particles, setParticles] = React.useState<Particle[]>([]);
 
-  const particles = useMemo(
-    () => generateParticles(particleDensity, minSize, maxSize),
-    [particleDensity, minSize, maxSize]
-  );
+  React.useEffect(() => {
+    setParticles(generateParticles(particleDensity, minSize, maxSize));
+  }, [particleDensity, minSize, maxSize]);
 
   return (
     <div
