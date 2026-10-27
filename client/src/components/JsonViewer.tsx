@@ -74,7 +74,10 @@ export default function JsonViewer({
       </div>
 
       {!collapsed && (
-        <pre className="p-4 overflow-x-auto text-[#201515] leading-relaxed max-h-96">
+        <pre
+          data-lenis-prevent
+          className="p-4 overflow-auto custom-scrollbar overscroll-contain text-[#201515] leading-relaxed max-h-96"
+        >
           <code>{jsonString}</code>
         </pre>
       )}

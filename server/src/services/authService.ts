@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { OAuth2Client } from "google-auth-library";
 import { db } from "../db/index.js";
 import { users, creditsLedger } from "../db/schema.js";
-import { ConflictError, UnauthorizedError } from "../lib/errors.js";
+import { ConflictError, UnauthorizedError, NotFoundError, ValidationError } from "../lib/errors.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../lib/tokens.js";
 
 const SALT_ROUNDS = 10;
@@ -224,5 +224,75 @@ export async function logoutUser(userId: string): Promise<void> {
     await db
         .update(users)
         .set({ currentRefreshTokenId: null })
+        .where(eq(users.id, userId));
+}
+
+export interface UserProfile {
+    id: string;
+    email: string;
+    role: "user" | "admin";
+    createdAt: Date;
+    isGoogleUser: boolean;
+}
+
+export async function getUserProfile(userId: string): Promise<UserProfile> {
+    const [user] = await db
+        .select({
+            id: users.id,
+            email: users.email,
+            passwordHash: users.passwordHash,
+            role: users.role,
+            createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+    if (!user) {
+        throw new NotFoundError("User not found");
+    }
+
+    const isGoogleUser = user.passwordHash.startsWith("google_oauth_");
+
+    return {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        isGoogleUser,
+    };
+}
+
+export async function changeUserPassword(
+    userId: string,
+    currentPass: string,
+    newPass: string
+): Promise<void> {
+    const [user] = await db
+        .select({
+            id: users.id,
+            passwordHash: users.passwordHash,
+        })
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+    if (!user) {
+        throw new NotFoundError("User not found");
+    }
+
+    if (user.passwordHash.startsWith("google_oauth_")) {
+        throw new ValidationError("Google-authenticated accounts do not use a password.");
+    }
+
+    const matches = await bcrypt.compare(currentPass, user.passwordHash);
+    if (!matches) {
+        throw new UnauthorizedError("Incorrect current password.");
+    }
+
+    const newHash = await bcrypt.hash(newPass, SALT_ROUNDS);
+    await db
+        .update(users)
+        .set({ passwordHash: newHash })
         .where(eq(users.id, userId));
 }

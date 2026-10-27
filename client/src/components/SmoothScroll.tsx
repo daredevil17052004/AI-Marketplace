@@ -14,6 +14,21 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       touchMultiplier: 1.5,
+      prevent: (node) => {
+        if (node instanceof HTMLElement) {
+          if (node.closest("[data-lenis-prevent]")) return true;
+          const style = window.getComputedStyle(node);
+          if (
+            style.overflowY === "auto" ||
+            style.overflowY === "scroll" ||
+            style.overflow === "auto" ||
+            style.overflow === "scroll"
+          ) {
+            return true;
+          }
+        }
+        return false;
+      },
     });
 
     function raf(time: number) {

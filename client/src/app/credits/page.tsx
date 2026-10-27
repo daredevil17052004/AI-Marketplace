@@ -148,34 +148,18 @@ export default function CreditsPage() {
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#FAF5EE] border border-[#EAE3D9] space-y-3 text-xs w-full md:w-auto min-w-[260px]">
-            <span className="font-bold text-[#201515] uppercase tracking-wider text-[11px] block">
-              Quick Test Top-up
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => handleTopUp(25)}
-                disabled={purchasingTier !== null}
-                className="flex-1 py-2 px-3 rounded-full bg-white hover:bg-[#F2ECE2] text-[#201515] font-bold text-xs border border-[#EAE3D9] transition-all cursor-pointer text-center"
-              >
-                +25 Test
-              </button>
-              <button
-                type="button"
-                onClick={() => handleTopUp(100)}
-                disabled={purchasingTier !== null}
-                className="btn-zap-primary flex-1 py-2 px-3 text-xs"
-              >
-                +100 Test
-              </button>
-            </div>
-          </div>
+          <a
+            href="#packages"
+            className="btn-zap-primary text-xs py-3 px-5 font-bold flex items-center gap-2 self-start md:self-auto cursor-pointer"
+          >
+            <span>Explore Packages</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
         </motion.div>
       </div>
 
       {/* Pricing / Top-Up Tiers with BackgroundGradient on Popular */}
-      <div className="relative z-10 space-y-6">
+      <div id="packages" className="relative z-10 space-y-6">
         <div>
           <h2 className="font-heading text-xl sm:text-2xl font-extrabold text-[#201515] tracking-tight">
             Top-up Packages

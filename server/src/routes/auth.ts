@@ -6,6 +6,8 @@ import {
     refreshAccessToken,
     logoutUser,
     loginWithGoogle,
+    getUserProfile,
+    changeUserPassword,
 } from "../services/authService.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -69,10 +71,25 @@ router.post("/refresh", async (req, res, next) => {
     }
 });
 
-router.post("/logout", requireAuth, async (req, res, next) => {
+router.get("/me", requireAuth, async (req, res, next) => {
     try {
-        await logoutUser(req.user!.userId);
-        res.json({ message: "Logout Successful" });
+        const profile = await getUserProfile(req.user!.userId);
+        res.json(profile);
+    } catch (err) {
+        next(err);
+    }
+});
+
+const changePasswordSchema = z.object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(8, "New password must be at least 8 characters"),
+});
+
+router.post("/change-password", requireAuth, async (req, res, next) => {
+    try {
+        const body = changePasswordSchema.parse(req.body);
+        await changeUserPassword(req.user!.userId, body.currentPassword, body.newPassword);
+        res.json({ success: true, message: "Password updated successfully" });
     } catch (err) {
         next(err);
     }

@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
 import JsonViewer from "@/components/JsonViewer";
+import FormattedOutput from "@/components/FormattedOutput";
+import FormattedInput from "@/components/FormattedInput";
 import BackgroundBeams from "@/components/BackgroundBeams";
 import { fetchJob, Job } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
@@ -191,34 +193,38 @@ export default function JobDetailPage() {
         <div className="bg-white border border-[#EAE3D9] rounded-3xl p-6 sm:p-8 space-y-4 shadow-sm">
           <div className="flex items-center justify-between pb-3 border-b border-[#EAE3D9]">
             <h3 className="font-heading font-bold text-[#201515] text-base">Input Payload</h3>
-            <span className="text-xs font-mono text-[#887E78]">JSON Schema</span>
+            <span className="text-xs font-mono text-[#887E78]">Agent Parameters</span>
           </div>
-          <div className="bg-[#FAF5EE] border border-[#EAE3D9] rounded-2xl p-4 overflow-x-auto">
-            <JsonViewer data={job.inputPayload || {}} />
-          </div>
+          <FormattedInput inputPayload={job.inputPayload || {}} />
         </div>
 
         {/* Output Result */}
         <div className="bg-white border border-[#EAE3D9] rounded-3xl p-6 sm:p-8 space-y-4 shadow-sm">
           <div className="flex items-center justify-between pb-3 border-b border-[#EAE3D9]">
             <h3 className="font-heading font-bold text-[#201515] text-base">Output Result</h3>
-            <span className="text-xs font-mono text-[#887E78]">Execution Data</span>
+            <span className="text-xs font-mono text-[#887E78]">Agent Output</span>
           </div>
 
           {job.status === "failed" ? (
-            <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-5 text-xs text-[#BE123C] space-y-1">
-              <p className="font-bold">Error reported by agent:</p>
-              <p>{job.errorMessage || "Unknown error during job execution."}</p>
+            <div className="bg-[#FFF1F2] border border-[#FECDD3] rounded-2xl p-5 text-xs text-[#BE123C] space-y-2">
+              <p className="font-bold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-[#E11D48]" />
+                Error reported during execution:
+              </p>
+              <p className="leading-relaxed font-mono bg-white/70 p-3 rounded-xl border border-[#FECDD3]">
+                {job.errorMessage || "Unknown error occurred during agent execution."}
+              </p>
             </div>
           ) : job.status === "completed" ? (
-            <div className="bg-[#FAF5EE] border border-[#EAE3D9] rounded-2xl p-4 overflow-x-auto">
-              <JsonViewer data={job.outputResult || {}} />
-            </div>
+            <FormattedOutput outputResult={job.outputResult} agentName={job.agentName} />
           ) : (
             <div className="flex flex-col items-center justify-center p-12 text-center space-y-3 bg-[#FAF5EE] border border-[#EAE3D9] rounded-2xl">
               <div className="w-8 h-8 border-3 border-[#EAE3D9] border-t-[#FF4F00] rounded-full animate-spin" />
               <p className="text-xs font-semibold text-[#5C524C]">
                 Agent is running in the background worker queue…
+              </p>
+              <p className="text-[11px] text-[#887E78]">
+                Real-time updates will stream when the agent completes.
               </p>
             </div>
           )}

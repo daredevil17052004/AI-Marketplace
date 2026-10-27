@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Bot, Layers, Zap, LayoutDashboard, Shield, LogOut, Menu, X, ArrowRight } from "lucide-react";
+import { Bot, Layers, Zap, LayoutDashboard, Shield, LogOut, Menu, X, ArrowRight, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import CreditChip from "@/components/CreditChip";
 import { cn } from "@/lib/utils";
@@ -77,10 +77,19 @@ export default function Navbar() {
           <CreditChip />
 
           {user ? (
-            <div className="flex items-center gap-2.5 pl-2 border-l border-[#EAE3D9]">
-              <span className="text-xs font-medium text-[#5C524C] max-w-[130px] truncate" title={user.email}>
-                {user.email}
-              </span>
+            <div className="flex items-center gap-2 pl-2 border-l border-[#EAE3D9]">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-full hover:bg-[#FAF5EE] border border-transparent hover:border-[#EAE3D9] transition-all group"
+                title="View Profile & Settings"
+              >
+                <div className="w-6 h-6 rounded-full bg-[#201515] text-white flex items-center justify-center font-bold text-[11px] group-hover:scale-105 transition-transform">
+                  {user.email ? user.email[0].toUpperCase() : "U"}
+                </div>
+                <span className="text-xs font-semibold text-[#5C524C] group-hover:text-[#201515] max-w-[120px] truncate">
+                  {user.email.split("@")[0]}
+                </span>
+              </Link>
               <button
                 type="button"
                 onClick={() => logout()}
@@ -148,17 +157,27 @@ export default function Navbar() {
 
           <div className="pt-4 border-t border-[#EAE3D9] flex flex-col gap-2">
             {user ? (
-              <button
-                type="button"
-                onClick={() => {
-                  logout();
-                  setMobileMenuOpen(false);
-                }}
-                className="flex items-center gap-2 text-[#BE123C] text-sm px-3.5 py-2 hover:bg-[#FFF1F2] rounded-xl font-medium"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Logout ({user.email})</span>
-              </button>
+              <>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 text-sm px-3.5 py-2 hover:bg-[#FAF5EE] rounded-xl font-semibold text-[#201515]"
+                >
+                  <User className="w-4 h-4 text-[#FF4F00]" />
+                  <span>Profile & Settings</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 text-[#BE123C] text-sm px-3.5 py-2 hover:bg-[#FFF1F2] rounded-xl font-medium"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout ({user.email})</span>
+                </button>
+              </>
             ) : (
               <>
                 <Link

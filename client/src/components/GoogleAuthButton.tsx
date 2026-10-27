@@ -19,6 +19,8 @@ declare global {
             client_id: string;
             callback: (response: { credential: string }) => void;
             auto_select?: boolean;
+            itp_support?: boolean;
+            error_callback?: (error: { type?: string; message?: string }) => void;
           }) => void;
           prompt: () => void;
           renderButton: (
@@ -101,6 +103,15 @@ export default function GoogleAuthButton({ mode = "signin", onError }: GoogleAut
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: handleCredentialResponse,
+          itp_support: true,
+          error_callback: (err) => {
+            console.error("Google Identity error:", err);
+            if (err?.type === "origin_mismatch") {
+              onError?.(
+                "Google OAuth origin mismatch: http://localhost:3000 must be added to 'Authorized JavaScript origins' in Google Cloud Console."
+              );
+            }
+          },
         });
         initializedRef.current = clientId;
       }

@@ -14,6 +14,19 @@ if (!backendUrl.startsWith("http://") && !backendUrl.startsWith("https://")) {
 backendUrl = backendUrl.replace(/\/+$/, "");
 
 const nextConfig: NextConfig = {
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "unsafe-none",
+          },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

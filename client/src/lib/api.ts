@@ -254,3 +254,26 @@ export async function logout(): Promise<void> {
     clearTokens();
   }
 }
+
+export interface UserProfileData {
+  id: string;
+  email: string;
+  role: "user" | "admin";
+  createdAt: string;
+  isGoogleUser: boolean;
+}
+
+export async function fetchUserProfile(): Promise<UserProfileData> {
+  return request<UserProfileData>("/auth/me");
+}
+
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string
+): Promise<{ success: boolean; message: string }> {
+  return request<{ success: boolean; message: string }>("/auth/change-password", {
+    method: "POST",
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+

@@ -6,6 +6,7 @@ import jobRoutes from "./routes/jobs.js";
 import creditRoutes from "./routes/credits.js";
 import adminRoutes from "./routes/admin.js";
 import { AppError } from './lib/errors.js';
+import { ZodError } from 'zod';
 import { createServer } from "http";
 import { initWebSocketServer } from "./lib/websocket.js";
 import logger from "./lib/logger.js";
@@ -47,6 +48,10 @@ app.get("/health", (_req, res) => {
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof AppError) {
     res.status(err.statusCode).json({ error: err.message });
+    return;
+  }
+  if (err instanceof ZodError) {
+    res.status(400).json({ error: err.issues.map((i) => i.message).join(", ") });
     return;
   }
   logger.error({ err }, "Unexpected error");

@@ -339,3 +339,28 @@
     linear-gradient(to right, rgba(32, 21, 21, 0.04) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(32, 21, 21, 0.04) 1px, transparent 1px);
 }
+
+/* Custom sleek scrollbar for internal text panels */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #D5CBC0;
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #FF4F00;
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #D5CBC0 transparent;
+}
+
+[data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
