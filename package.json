@@ -1,0 +1,17 @@
+{
+  "name": "ai-marketplace-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Marketplace root workspace",
+  "scripts": {
+    "dev": "node scripts/run-all.mjs",
+    "start": "node scripts/run-all.mjs",
+    "run": "node scripts/run-all.mjs",
+    "stop": "node scripts/stop-all.mjs",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "db:migrate": "npm --prefix server run db:migrate",
+    "db:seed": "npm --prefix server run db:seed",
+    "db:studio": "npm --prefix server run db:studio"
+  }
+}
