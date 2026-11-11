@@ -32,7 +32,7 @@ import {
 import { formatDate, cn } from "@/lib/utils";
 
 export default function AdminPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<"agents" | "jobs" | "users">("agents");
 
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -44,6 +44,7 @@ export default function AdminPage() {
   const [agentToDelete, setAgentToDelete] = useState<Agent | null>(null);
 
   const loadData = useCallback(async () => {
+    if (!user || user.role !== "admin") return;
     setLoading(true);
     try {
       const [agentsData, jobsData, usersData] = await Promise.all([
@@ -59,9 +60,15 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user || user.role !== "admin") {
+      setLoading(false);
+      return;
+    }
+
     let ignore = false;
     Promise.all([
       fetchAdminAgents(),
@@ -84,7 +91,7 @@ export default function AdminPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [authLoading, user]);
 
   const handleToggle = async (id: string, currentStatus: boolean) => {
     try {
@@ -107,6 +114,37 @@ export default function AdminPage() {
       alert("Failed to delete agent");
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#FF4F00] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "admin") {
+    return (
+      <div className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#FAF5EE] border border-[#EAE3D9] rounded-2xl p-8 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-[#FFF1F2] text-[#BE123C] flex items-center justify-center mx-auto">
+            <Shield className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold text-[#201515]">Admin Access Required</h2>
+          <p className="text-sm text-[#5C524C]">
+            You do not have administrative privileges to view or manage the Admin Studio.
+          </p>
+          <Link
+            href="/agents"
+            className="btn-zap-primary inline-flex text-xs py-2 px-5 font-semibold"
+          >
+            <span>Back to Marketplace</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-[calc(100vh-4.5rem)] p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8 bg-[#FFFDF9]">

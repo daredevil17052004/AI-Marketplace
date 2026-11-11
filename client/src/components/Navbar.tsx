@@ -21,7 +21,7 @@ export default function Navbar() {
     { label: "Credits", href: "/credits", icon: Zap },
   ];
 
-  if (user?.role === "admin" || !user) {
+  if (user?.role === "admin") {
     navLinks.push({ label: "Admin", href: "/admin", icon: Shield });
   }
 
@@ -74,7 +74,7 @@ export default function Navbar() {
 
         {/* Right CTA / Auth */}
         <div className="hidden sm:flex items-center gap-3">
-          <CreditChip />
+          {user && <CreditChip />}
 
           {user ? (
             <div className="flex items-center gap-2 pl-2 border-l border-[#EAE3D9]">
@@ -131,9 +131,11 @@ export default function Navbar() {
       {/* Mobile menu drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden px-4 pt-3 pb-6 space-y-2 bg-[#FFFDF9] border-b border-[#EAE3D9] shadow-lg">
-          <div className="py-2">
-            <CreditChip />
-          </div>
+          {user && (
+            <div className="py-2">
+              <CreditChip />
+            </div>
+          )}
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;

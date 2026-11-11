@@ -34,15 +34,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<StoredUser | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [balance, setBalance] = useState<number>(50);
+  const [balance, setBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const refreshBalance = useCallback(async () => {
+    if (!getAccessToken()) {
+      setBalance(0);
+      return;
+    }
     try {
       const res = await fetchCreditBalance();
       setBalance(res.balance);
     } catch {
-      // keep current balance
+      // keep current balance or default to 0 if unauthorized
+      if (!getAccessToken()) {
+        setBalance(0);
+      }
     }
   }, []);
 
@@ -131,6 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearTokens();
       setUser(null);
       setAccessToken(null);
+      setBalance(0);
     }
   };
 
